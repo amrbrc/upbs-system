@@ -437,7 +437,7 @@ const borrow = async (req, res) => {
             } else if (bicycle.condition_status === 'Borrowed') {
                 statusMsg = `Bike ${bicycleCode} is currently checked out by another member.`;
             } else if (bicycle.condition_status === 'Pending_Status') {
-                statusMsg = `Bike ${bicycleCode} is currently pending a condition report from the previous user. Please try another bike.`;
+                statusMsg = `Bike ${bicycleCode} is awaiting return inspection by the previous rider. Please choose another bike.`;
             }
             return res.json({ reply: statusMsg });
         }
