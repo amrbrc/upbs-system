@@ -142,7 +142,7 @@ async function pollInbox() {
                 const goodMatch = smsMessage.match(/^(\w+)\s+good$|^good\s+(\w+)$/i);
                 const brokenMatch = smsMessage.match(/^(\w+)\s+broken$|^broken\s+(\w+)$/i);
                 const missingMatch = smsMessage.match(/^(\w+)\s+missing$|^missing\s+(\w+)$/i);
-                const deliveredMatch = smsMessage.match(/^(\w+)\s+delivered$|^delivered\s+(\w+)(?:\s+(\w+))?$/i);
+                const deliveredMatch = smsMessage.match(/^delivered\s+(\w+)(?:\s+(\w+))?$|^(\w+)\s+delivered(?:\s+(\w+))?$/i);
                 const pointsMatch = smsMessage.match(/^points$/i);
 
                 if (smsMessage === 'search all') {
@@ -178,8 +178,8 @@ async function pollInbox() {
                     payload.bicycleCode = (missingMatch[1] || missingMatch[2]).toLowerCase();
                 } else if (deliveredMatch) {
                     endpoint = '/api/delivered';
-                    payload.bicycleCode = (deliveredMatch[1] || deliveredMatch[2]).toLowerCase();
-                    payload.deliveryLocation = deliveredMatch[3] ? deliveredMatch[3].toLowerCase() : null;
+                    payload.bicycleCode = (deliveredMatch[1] || deliveredMatch[3]).toLowerCase();
+                    payload.deliveryLocation = (deliveredMatch[2] || deliveredMatch[4]) ? (deliveredMatch[2] || deliveredMatch[4]).toLowerCase() : null;
                 } else if (pointsMatch) {
                     endpoint = '/api/points';
                 } else {

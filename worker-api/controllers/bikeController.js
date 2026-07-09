@@ -796,8 +796,8 @@ const broken = async (req, res) => {
             await upbsConn.commit();
 
             const replyMsg = gracePeriodExpired
-                ? `Notice: Your borrow duration of ${Math.round(borrowMins)} mins exceeds the ${gracePeriodMins}-min grace period. This trip has been ended as a self-reported damage. Please return Bike ${bicycleCode} to your destination hub. Once dropped off, text 'delivered ${bicycleCode} [location]' so our team can collect it.`
-                : `Thank you for reporting damage on Bike ${bicycleCode}. Please lock and leave it at a station hub. Once dropped off, text 'delivered ${bicycleCode} [location]' so our team can collect it.`;
+                ? `Notice: Duration exceeds grace period. Trip ended as self-reported damage (Bike ${bicycleCode}). Please leave it securely at the hub rack.`
+                : `Thank you for reporting damage on Bike ${bicycleCode}. Your trip is ended with no penalty. Our maintenance team has been alerted.`;
 
             return res.json({ reply: replyMsg });
         } else {
@@ -1061,7 +1061,7 @@ const delivered = async (req, res) => {
 
         // Check if the person delivering is the borrower who broke/used it
         const [lastHistory] = await upbsConn.query(
-            "SELECT borrowed_by, reported_condition, to_location FROM bicycle_history WHERE bicycle_code = ? ORDER BY id DESC LIMIT 1",
+            "SELECT borrowed_by, reported_condition, new_location FROM bicycle_history WHERE bicycle_code = ? ORDER BY id DESC LIMIT 1",
             [bicycleCode]
         );
         const isBorrowerWhoBrokeIt = (activeTrip.length > 0) || (lastHistory.length > 0 && lastHistory[0].borrowed_by === currentUserName && lastHistory[0].reported_condition === 'Broken');

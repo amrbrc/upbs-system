@@ -99,11 +99,14 @@ async function runMigrations() {
     } catch(e) {
         console.error("[DB] Migration error reward_delivered_bike or admin alert settings:", e.message);
     }
-    try {
-        await upbsPool.query("ALTER TABLE bicycle_codes ADD COLUMN dispute_image_url VARCHAR(512) DEFAULT NULL");
-        console.log("[DB] Added dispute_image_url column to bicycle_codes.");
-    } catch(e) {
-        if(e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error dispute_image_url (bicycle_codes):", e.message);
+    const colsToEnsure = [
+        "ALTER TABLE bicycle_codes ADD COLUMN dispute_image_url VARCHAR(512) DEFAULT NULL",
+        "ALTER TABLE bicycle_codes ADD COLUMN broken_reported_at DATETIME DEFAULT NULL",
+        "ALTER TABLE bicycle_codes ADD COLUMN dispute_reported_by VARCHAR(50) DEFAULT NULL",
+        "ALTER TABLE bicycle_codes ADD COLUMN penalty_applied INT DEFAULT 0"
+    ];
+    for (const q of colsToEnsure) {
+        try { await upbsPool.query(q); } catch(e) { if(e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error:", e.message); }
     }
     try {
         await upbsPool.query("ALTER TABLE bicycle_history ADD COLUMN dispute_image_url VARCHAR(512) DEFAULT NULL");
