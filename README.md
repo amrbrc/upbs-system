@@ -108,30 +108,129 @@ Below is a quick dictionary of the text commands a student can send via SMS and 
 
 ---
 
-## Running Locally
+## Deployment Guide & Environment Setup
 
-### 1. Worker API (Business Logic)
-Starts on **Port 3001**.
-```bash
-cd worker-api
-npm install
-node server.js
+This repository is designed to be highly agnostic. Depending on your needs, you can deploy the UPBS system in one of two main scenarios.
+
+### Scenario A: Single Local Hardware Deployment (All-in-One)
+In this scenario, all services (Worker API + Dashboard, Gateway Server, and Gammu SMSD) run on a single local hardware machine (e.g. an office server, desktop, or Raspberry Pi) directly connected to the physical GSM modem.
+
+```
++--------------------------------------------------------------+
+|                     SINGLE LOCAL SERVER                      |
+|                                                              |
+|   +--------------+      +----------------+                   |
+|   |  Worker API  | <--- | Gateway Server |                   |
+|   |  (Port 3001) |      |  (Port 3000)   |                   |
+|   +--------------+      +----------------+                   |
+|          |                      |                            |
+|          v                      v                            |
+|     [MySQL:upbs]           [MySQL:smsd] <--- [Gammu Daemon]  |
+|                                                     ^        |
+|                                                     |        |
++-----------------------------------------------------|--------+
+                                                      v
+                                              [GSM USB Dongle]
 ```
 
-### 2. Gateway Server (SMS Handling)
-Starts on **Port 3000**.
-*Note: Ensure your Gammu daemon is running and configured to point to this server.*
+#### Step 1: Clone and Install Dependencies
+From the repository root directory, run the helper command to install dependencies in both microservices:
 ```bash
-cd gateway-server
-npm install
-node server.js
+npm run install:all
 ```
 
-### 3. Production (PM2)
-To run both services simultaneously on a server:
+#### Step 2: Environment Configuration
+1. **Worker API**: Copy `worker-api/.env.example` to `worker-api/.env` and adjust variables.
+   ```bash
+   cp worker-api/.env.example worker-api/.env
+   ```
+2. **Gateway Server**: Copy `gateway-server/.env.example` to `gateway-server/.env` and adjust variables.
+   ```bash
+   cp gateway-server/.env.example gateway-server/.env
+   ```
+   *Note: In Scenario A, `WORKER_URL` in `gateway-server/.env` should point to `http://localhost:3001`.*
+
+#### Step 3: Recreate & Seed Database
+Ensure you have a local MySQL/MariaDB server running. To automatically drop, recreate, and seed both the `upbs` and `smsd` databases from scratch, run this single command:
 ```bash
-pm2 start gateway-server/server.js --name "upbs-gateway"
+npm run db:recreate
+```
+*(Optionally, if your MySQL requires root privileges to create databases, configure `DB_ROOT_USER` and `DB_ROOT_PASSWORD` in `worker-api/.env` first).*
+
+#### Step 4: Run the Services
+To start both servers in development:
+* In terminal 1: `npm run start:worker`
+* In terminal 2: `npm run start:gateway`
+
+For production daemon management, use **PM2**:
+```bash
 pm2 start worker-api/server.js --name "upbs-worker"
+pm2 start gateway-server/server.js --name "upbs-gateway"
 pm2 save
 pm2 startup
 ```
+
+---
+
+### Scenario B: Hybrid Cloud/Hardware Deployment (Separated Box)
+In this scenario, the database, Worker API, and Admin/Student Dashboard are deployed in the cloud (e.g. Digital Ocean Droplet) for high availability, while the physical GSM modem remains connected to a local hardware box (e.g., Raspberry Pi) running only the Gateway Server and Gammu.
+
+```
++--------------------------------------------------------------+
+|                         CLOUD (VPS)                          |
+|                                                              |
+|          +--------------+                                    |
+|          |  Worker API  | (Public HTTPs Port 3001)            |
+|          | & Dashboard  |                                    |
+|          +--------------+                                    |
+|                 |                                            |
+|                 v                                            |
+|            [MySQL:upbs]                                      |
++-----------------|--------------------------------------------+
+                  ^
+                  | (Secured Axios Polling / HTTP POSTs)
++-----------------|--------------------------------------------+
+                  v                                            |
+|          +---------------+                                   |
+|          |Gateway Server | (Port 3000)                       |
+|          +---------------+                                   |
+|                 |                                            |
+|                 v                                            |
+|            [MySQL:smsd] <--- [Gammu Daemon]                  |
+|                                     ^                        |
+|                                     |                        |
+|                              [GSM USB Dongle]                |
+|                    ON-PREMISE HARDWARE BOX                   |
++--------------------------------------------------------------+
+```
+
+#### Step 1: Cloud VPS Deployment (Worker API & Dashboard)
+1. Clone this repository on your Cloud VPS (e.g. Digital Ocean Droplet).
+2. Install dependencies: `npm run install:all`
+3. Configure `worker-api/.env` with your cloud database credentials. Set `NODE_ENV=production`.
+4. Initialize the cloud database (only `upbs` is needed in the cloud, but the script will create both):
+   ```bash
+   npm run db:recreate
+   ```
+5. Start the Worker API using PM2:
+   ```bash
+   pm2 start worker-api/server.js --name "upbs-worker"
+   ```
+
+#### Step 2: On-Premise Hardware Box Deployment (Gateway Server)
+1. Clone this repository on your local hardware box (connected to the GSM modem).
+2. Install dependencies: `npm run install:all`
+3. Configure `gateway-server/.env`. Connect `DB_HOST` to your local MySQL (which runs `smsd` for Gammu).
+4. Set `WORKER_URL` to point to your cloud VPS address (e.g., `https://upbs-api.yourdomain.com`).
+5. Ensure `GATEWAY_SECRET` and `GATEWAY_API_KEY` match those configured on the Cloud VPS.
+6. Install and configure `gammu-smsd` to write incoming SMS to the local `smsd` database.
+7. Start the Gateway Server using PM2:
+   ```bash
+   pm2 start gateway-server/server.js --name "upbs-gateway"
+   ```
+
+### Why this Decoupled Architecture is Robust:
+1. **Prevention of Hardware Lockups**: Heavy database reporting queries do not run on the local hardware box, ensuring `gammu-smsd` never drops incoming SMS.
+2. **Network Interruption Tolerance**: If internet connection to the Cloud VPS is temporarily lost, incoming SMS remain safe in the local `smsd.inbox` table as unread. The local Gateway Server will automatically resume routing them once connection is restored.
+3. **Outbound SMS Queueing**: The Worker API writes all system notification/reminder SMS to the `outbound_sms` table in the cloud. The local Gateway Server polls this endpoint every 5 seconds, downloads the messages, sends them using the local modem, and marks them as sent in the cloud.
+

@@ -1,0 +1,18 @@
+{
+  "name": "upbs-root",
+  "version": "1.0.0",
+  "description": "UP Bikeshare System - Project root with deployment orchestrations",
+  "scripts": {
+    "install:all": "npm install --prefix worker-api && npm install --prefix gateway-server",
+    "db:recreate": "node worker-api/recreate_db.js",
+    "start:worker": "npm start --prefix worker-api",
+    "start:gateway": "npm start --prefix gateway-server"
+  },
+  "keywords": [
+    "upbs",
+    "bikeshare",
+    "deployment"
+  ],
+  "author": "",
+  "license": "ISC"
+}
