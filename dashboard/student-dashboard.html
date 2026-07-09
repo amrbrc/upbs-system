@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UP Bikeshare | Student Dashboard</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#24262d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/css/style.css?v=121">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+        const token = sessionStorage.getItem('adminToken');
+        const role = sessionStorage.getItem('userRole');
+        if (!token || role !== 'student') {
+            window.location.href = '/';
+        }
+    </script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar d-flex flex-column p-4">
+        <div class="brand d-flex align-items-center gap-3 mb-5">
+            <div class="brand-icon d-flex justify-content-center align-items-center shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18.5" cy="17.5" r="3.5" />
+                    <circle cx="5.5" cy="17.5" r="3.5" />
+                    <circle cx="15" cy="5" r="1" />
+                    <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1 class="h6 mb-0 fw-bold">UP Bikeshare</h1>
+                <p class="small text-muted mb-0"> User Dashboard</p>
+            </div>
+        </div>
+
+        <ul class="nav-menu list-unstyled p-0 mb-0 d-flex flex-column gap-2">
+            <li class="nav-item active" id="nav-dashboard">Dashboard</li>
+            <li class="nav-item" id="nav-summary">Summary</li>
+            <li class="nav-item" id="nav-community">Community</li>
+            <li class="nav-item" id="nav-leaderboards">Leaderboards</li>
+        </ul>
+
+        <!-- Bottom group: Quick Start + divider + moon/time/logout -->
+        <div class="mt-auto">
+            <!-- Quick Start sits right above the border line -->
+            <button id="btn-quick-start" class="quickstart-trigger-btn mb-3" title="Quick Start Guide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Quick Start Guide
+            </button>
+            <div class="sidebar-bottom pt-4 border-top">
+                <div class="d-flex gap-2 mb-3">
+                    <button id="theme-toggle" class="theme-toggle btn flex-fill" title="Toggle Theme"><i class="bi bi-moon-fill"></i></button>
+                    <div class="theme-toggle flex-fill d-flex align-items-center justify-content-center" id="live-time"
+                        style="flex: 2; font-size: 0.85rem; font-weight: 600;">--:--:--</div>
+                </div>
+                <button id="btn-student-logout"
+                    class="btn btn-outline-danger w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2"
+                    style="border-radius: var(--radius-sm);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Log Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+
+
+    <!-- MOBILE HEADER -->
+    <header
+        class="mobile-header d-flex d-lg-none align-items-center justify-content-between px-3 py-2 border-bottom shadow-sm"
+        style="background: var(--bg-sidebar); z-index: 99; flex-shrink: 0; transition: background 0.3s var(--ease);">
+        <div class="d-flex align-items-center gap-3">
+            <button id="mobile-menu-toggle"
+                class="btn btn-link p-0 border-0 d-flex align-items-center justify-content-center"
+                style="width: 38px; height: 38px; border-radius: 8px; font-size: 1.35rem; text-decoration: none; color: var(--text-h) !important; background: var(--border);">☰</button>
+            <div class="brand-icon d-flex justify-content-center align-items-center shadow-sm"
+                style="width: 32px; height: 32px; border-radius: 8px; font-size: 1rem; box-shadow: 0 4px 10px rgba(123, 17, 19, 0.2) !important;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18.5" cy="17.5" r="3.5" />
+                    <circle cx="5.5" cy="17.5" r="3.5" />
+                    <circle cx="15" cy="5" r="1" />
+                    <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                </svg>
+            </div>
+            <div class="d-flex flex-column">
+                <h1 class="h6 mb-0 fw-bold text-dark"
+                    style="color: var(--text-h) !important; font-size: 0.9rem; letter-spacing: -0.01em; line-height: 1.2;">
+                    UP Bikeshare</h1>
+                <span class="text-muted"
+                    style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">User
+                    Console</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-wrapper flex-grow-1 d-flex flex-column">
+
+        <!-- DASHBOARD CONTAINER (Map & Grids) -->
+        <div id="dashboard-container" class="d-flex flex-column" style="display: flex; height: 100%; width: 100%;">
+            <!-- HERO MAP -->
+            <div class="hero-map-section border-bottom" style="height: 35vh; min-height: 220px; flex-shrink: 0;">
+                <div id="station-map" class="h-100 w-100"></div>
+            </div>
+
+            <div class="container-fluid px-4 pt-4 pb-5 flex-grow-1 d-flex flex-column"
+                style="overflow: hidden; min-height: 0;">
+                <div class="top-stats d-flex gap-3 mb-4 flex-shrink-0">
+                    <div class="stat-box card flex-fill border p-3 shadow-sm">
+                        <span class="lbl text-muted text-uppercase fw-semibold mb-2">Total Fleet</span>
+                        <span class="val h2 fw-bold mb-0" id="stat-total-bikes">--</span>
+                    </div>
+                    <div class="stat-box card flex-fill border p-3 shadow-sm">
+                        <span class="lbl text-muted text-uppercase fw-semibold mb-2">Active Stations</span>
+                        <span class="val h2 fw-bold mb-0" id="stat-total-stations">--</span>
+                    </div>
+                    <div class="stat-box card flex-fill border p-3 shadow-sm">
+                        <span class="lbl text-muted text-uppercase fw-semibold mb-2">Last Updated</span>
+                        <span class="val h4 fw-bold mb-0 py-1" id="stat-last-updated"
+                            style="white-space: nowrap;">--:--</span>
+                    </div>
+                </div>
+
+                <div class="row g-4 flex-grow-1" style="min-height: 0;">
+                    <!-- LEFT COLUMN -->
+                    <div class="col-lg-6 col-left h-100">
+                        <div class="panel card border p-4 shadow-sm h-100 d-flex flex-column">
+                            <div
+                                class="panel-header d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
+                                <div class="panel-title h6 mb-0 fw-bold">Active Stations</div>
+                            </div>
+                            <div id="stations-grid" class="custom-scroll flex-grow-1"
+                                style="overflow-y: auto; min-height: 0; padding-right: 4px;">
+                                <!-- Stations rendered here via bike.js -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- RIGHT COLUMN -->
+                    <div class="col-lg-6 col-right h-100">
+                        <div class="panel card border p-4 shadow-sm h-100 d-flex flex-column">
+                            <div
+                                class="panel-header d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
+                                <div class="panel-title h6 mb-0 fw-bold">Bicycle Fleet</div>
+                            </div>
+                            <div id="bikes-grid" class="custom-scroll flex-grow-1"
+                                style="overflow-y: auto; min-height: 0; padding-right: 4px; align-content: start;">
+                                <!-- Bikes rendered here via bike.js -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY CONTAINER -->
+        <div id="summary-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; height: calc(100vh - 3rem); overflow-y: auto;">
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div
+                    style="width: 5px; height: 32px; background-color: var(--up-green, #006a4e); border-radius: 4px; margin-right: 12px;">
+                </div>
+                <div>
+                    <h3 class="h4 fw-bolder mb-0" style="color: var(--text-h); letter-spacing: -0.03em;">Personal
+                        Summary</h3>
+                    <p class="small text-muted mb-0" style="font-weight: 500; margin-top: 2px;">Your ride status and
+                        history.</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-5 d-flex flex-column gap-4">
+                    <!-- Trust Score Gauge -->
+                    <div class="panel card border-0 p-4 shadow-sm h-100 d-flex flex-column align-items-center justify-content-center position-relative"
+                        style="background-color: var(--bg-panel); border-radius: var(--radius-md); overflow: hidden;">
+                        <h6 class="fw-bold text-muted text-uppercase mb-4"
+                            style="letter-spacing: 0.05em; font-size: 0.8rem;">Your Trust Score</h6>
+                        <div class="gauge-container position-relative" style="width: 180px; height: 180px;">
+                            <svg class="w-100 h-100" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border)" stroke-width="8" />
+                                <circle id="trust-score-circle" cx="50" cy="50" r="45" fill="none"
+                                    stroke="var(--up-green, #006a4e)" stroke-width="8" stroke-linecap="round"
+                                    stroke-dasharray="283" stroke-dashoffset="283"
+                                    style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s ease;" />
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                <span id="trust-score-text" class="h1 fw-bolder mb-0 d-block"
+                                    style="color: var(--text-h); line-height: 1;">0</span>
+                                <span class="small text-muted fw-semibold">/ 120</span>
+                            </div>
+                        </div>
+                        <p id="trust-score-msg" class="small text-muted text-center mt-4 mb-0 fw-medium">Loading
+                            score...</p>
+                    </div>
+
+                    <!-- Active Ride Timer -->
+                    <div class="panel card border-0 p-4 shadow-sm"
+                        style="background: linear-gradient(135deg, var(--up-maroon, #7b1113) 0%, #5a0c0e 100%); color: white; border-radius: var(--radius-md);">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="fw-bold text-uppercase text-white mb-0"
+                                style="letter-spacing: 0.05em; font-size: 0.8rem; opacity: 0.9;">Active Ride</div>
+                            <span class="badge text-dark rounded-pill shadow-sm"
+                                style="background-color: var(--bg-main); font-size: 0.7rem; font-weight: 700;">IN
+                                PROGRESS</span>
+                        </div>
+                        <div class="text-center my-3">
+                            <div id="active-ride-timer" class="display-4 fw-bolder font-monospace"
+                                style="letter-spacing: -0.05em; text-shadow: 0 4px 12px rgba(0,0,0,0.2);">00:00:00</div>
+                            <div class="small fw-semibold mt-2" style="opacity: 0.8;">Time remaining</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7 d-flex flex-column gap-4">
+                    <!-- Last SMS Transaction -->
+                    <div class="panel card border p-4 shadow-sm"
+                        style="background-color: var(--bg-panel); border-radius: var(--radius-md);">
+                        <h6 class="fw-bold text-dark mb-3">Last Text Transaction</h6>
+                        <div class="d-flex flex-column gap-3" id="last-sms-container">
+                            <div class="text-center py-3 text-muted small">No recent text transactions found.</div>
+                        </div>
+                    </div>
+
+                    <!-- Ride Log -->
+                    <div class="panel card border p-0 shadow-sm flex-grow-1 overflow-hidden"
+                        style="background-color: var(--bg-panel); border-radius: var(--radius-md);">
+                        <div class="p-4 border-bottom">
+                            <h6 class="fw-bold text-dark mb-0">Recent Ride Log</h6>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                <thead class="text-muted"
+                                    style="font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                                    <tr>
+                                        <th class="ps-4 fw-semibold border-0 py-3"
+                                            style="background-color: var(--bg-main); color: var(--text-muted);">Date
+                                        </th>
+                                        <th class="fw-semibold border-0 py-3"
+                                            style="background-color: var(--bg-main); color: var(--text-muted);">Bike
+                                        </th>
+                                        <th class="fw-semibold border-0 py-3"
+                                            style="background-color: var(--bg-main); color: var(--text-muted);">Route
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted"
+                                            style="background-color: transparent;">Loading recent rides...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMMUNITY CONTAINER -->
+        <div id="community-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; height: calc(100vh - 3rem); overflow-y: auto;">
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div
+                    style="width: 5px; height: 32px; background-color: #0ea5e9; border-radius: 4px; margin-right: 12px;">
+                </div>
+                <div>
+                    <h3 class="h4 fw-bolder mb-0" style="color: var(--text-h); letter-spacing: -0.03em;">Community</h3>
+                    <p class="small text-muted mb-0" style="font-weight: 500; margin-top: 2px;">Wall of Honor and Policy
+                        Reminders</p>
+                </div>
+            </div>
+
+
+            <!-- Wall of Honor Full Width Interactive -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="panel card border-0 p-0 shadow"
+                        style="background-color: var(--bg-panel); border-radius: 1rem; overflow: hidden;">
+                        <div class="p-4 border-bottom position-relative"
+                            style="background: linear-gradient(135deg, #7b1113 0%, #b91c1c 50%, #f59e0b 100%); overflow: hidden;">
+                            <div class="position-absolute top-0 end-0 rounded-circle"
+                                style="width: 150px; height: 150px; background: rgba(255,255,255,0.15); transform: translate(30%, -30%);">
+                            </div>
+                            <div class="position-absolute bottom-0 start-0 rounded-circle"
+                                style="width: 100px; height: 100px; background: rgba(255,255,255,0.1); transform: translate(-30%, 30%);">
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center position-relative z-1">
+                                <h5 class="fw-bolder mb-0"
+                                    style="color: #ffffff !important; letter-spacing: -0.02em; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                    Wall of Honor</h5>
+                            </div>
+                        </div>
+                        <div class="p-4"
+                            style="height: 350px; overflow: hidden; position: relative; background-color: var(--bg-main, #f8fafc);">
+                            <div id="wall-of-honor-ticker"
+                                style="position: absolute; top: 0; left: 0; right: 0; padding: 1.5rem; transition: transform 1s linear;">
+                                <div class="text-center py-5 text-muted small">Loading Wall of Honor...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column -->
+                <div class="col-lg-5 d-flex flex-column gap-4">
+                    <!-- Merits -->
+                    <div class="panel card border-0 p-4 shadow h-100"
+                        style="background-color: var(--bg-panel); border-radius: 1rem;">
+                        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                            <h6 class="fw-bolder mb-0 d-flex align-items-center gap-2" style="color: var(--text-h);">
+                                <i class='bx bx-trending-up text-success fs-5'></i> Earn Trust Points
+                            </h6>
+                            <span class="badge bg-warning rounded-pill shadow-sm"
+                                style="color: #0f172a; font-size: 0.7rem; padding: 0.4rem 0.6rem;">MAX: 120 PTS</span>
+                        </div>
+
+                        <div class="d-flex flex-column gap-3 mb-4 flex-grow-1">
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                                    <i class='bx bx-check-double fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.9rem; color: var(--text-h);">Honesty
+                                        Verification</div>
+                                    <div class="small" style="line-height: 1.3; color: var(--text-muted);">Rewarded when
+                                        the next rider confirms you left the bike in good condition.</div>
+                                </div>
+                                <span id="badge-honesty-reward" class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #16a34a; font-size: 0.75rem;">+1 pt</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                                    <i class='bx bx-cycling fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.9rem; color: var(--text-h);">
+                                        Consistent Rider</div>
+                                    <div class="small" style="line-height: 1.3; color: var(--text-muted);">Earned by
+                                        completing 5 consecutive clean rides without disputes.</div>
+                                </div>
+                                <span id="badge-consistent-rider" class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #16a34a; font-size: 0.75rem;">+2 pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                                    <i class='bx bx-search-alt fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.9rem; color: var(--text-h);">Dispute
+                                        Reward</div>
+                                    <div class="small" style="line-height: 1.3; color: var(--text-muted);">Rewarded for
+                                        correctly identifying a damaged or missing bike (Admin verified).</div>
+                                </div>
+                                <span id="badge-reward-honest-report"
+                                    class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #16a34a; font-size: 0.75rem;">+5 pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                                    <i class='bx bxs-group fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.9rem; color: var(--text-h);">
+                                        Community Volunteer</div>
+                                    <div class="small" style="line-height: 1.3; color: var(--text-muted);">Completing a
+                                        verified community service shift at a Hub. Earns suspended users their points
+                                        back!</div>
+                                </div>
+                                <span id="badge-reward-community-volunteer"
+                                    class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #16a34a; font-size: 0.75rem;">+20 pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                                    <i class='bx bx-transfer fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.9rem; color: var(--text-h);">
+                                        Bicycle Transport (Volunteer Rescue)</div>
+                                    <div class="small" style="line-height: 1.3; color: var(--text-muted);">Volunteer reward for rescuing an abandoned or broken bike found on campus and delivering it to a designated station via the <strong>delivered [bike] [location]</strong> command.</div>
+                                </div>
+                                <span id="badge-reward-delivered-bike"
+                                    class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #16a34a; font-size: 0.75rem;">+5 pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-7 d-flex flex-column gap-4">
+                    <!-- Demerits -->
+                    <div class="panel card border-0 p-4 shadow h-100"
+                        style="background-color: var(--bg-panel); border-radius: 1rem;">
+                        <h6 class="fw-bolder mb-4 pb-3 border-bottom d-flex align-items-center gap-2"
+                            style="color: var(--text-h);">
+                            <i class='bx bx-trending-down text-danger fs-5'></i> Trust Point Penalties & Violations
+                        </h6>
+
+                        <div class="d-flex flex-column gap-3 mb-4 flex-grow-1">
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                    style="width: 46px; height: 46px; background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                                    <i class='bx bx-x-circle fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.95rem; color: var(--text-h);">
+                                        Abandoned Handshake</div>
+                                    <div class="small" style="color: var(--text-muted);">Deducted when a user abandons
+                                        the return handshake confirmation (failing to reply GOOD/BROKEN).</div>
+                                </div>
+                                <span id="badge-penalty-abandoned-handshake"
+                                    class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #ef4444; font-size: 0.75rem;">-2 pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                    style="width: 46px; height: 46px; background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                                    <i class='bx bx-error-alt fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.95rem; color: var(--text-h);">False
+                                        Reporting</div>
+                                    <div class="small" style="color: var(--text-muted);">Deducted for falsely reporting
+                                        a working bike as broken.</div>
+                                </div>
+                                <span id="badge-penalty-false-report"
+                                    class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #ef4444; font-size: 0.75rem;">-5 pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                    style="width: 46px; height: 46px; background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                                    <i class='bx bx-timer fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.95rem; color: var(--text-h);">
+                                        Overtime Penalty</div>
+                                    <div class="small" style="color: var(--text-muted);" id="desc-penalty-overtime">
+                                        Deducted every hour you exceed
+                                        the 6-hour limit. Return on time!</div>
+                                </div>
+                                <span id="badge-penalty-overtime" class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #ef4444; font-size: 0.75rem;">-5 / hr</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(185, 28, 28, 0.05); border: 1px solid rgba(185, 28, 28, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                    style="width: 46px; height: 46px; background: rgba(185, 28, 28, 0.1); color: #b91c1c;">
+                                    <i class='bx bx-message-alt-error fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.95rem; color: var(--text-h);">Hit &
+                                        Run Penalty</div>
+                                    <div class="small" style="color: var(--text-muted);">Severe penalty for abandoning a
+                                        broken bike without system notification.</div>
+                                </div>
+                                <span id="badge-penalty-hit-and-run" class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: #b91c1c; font-size: 0.75rem;">-35 pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(123, 17, 19, 0.05); border: 1px solid rgba(123, 17, 19, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                    style="width: 46px; height: 46px; background: rgba(123, 17, 19, 0.1); color: #7b1113;">
+                                    <i class='bx bx-ghost fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.95rem; color: var(--text-h);">
+                                        Missing Bike</div>
+                                    <div class="small" style="color: var(--text-muted);">Deducted if the bike goes
+                                        completely missing on your watch.</div>
+                                </div>
+                                <span id="badge-penalty-missing-bike"
+                                    class="badge rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="background-color: var(--up-maroon, #7b1113); font-size: 0.75rem;">-50
+                                    pts</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-2 rounded-4 shadow-sm"
+                                style="background: rgba(217, 119, 6, 0.05); border: 1px solid rgba(217, 119, 6, 0.1);">
+                                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                    style="width: 46px; height: 46px; background: rgba(217, 119, 6, 0.1); color: #d97706;">
+                                    <i class='bx bx-lock-alt fs-4'></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder mb-1" style="font-size: 0.95rem; color: var(--text-h);">
+                                        Suspect Account Freeze</div>
+                                    <div class="small" style="color: var(--text-muted);">Account is locked temporarily
+                                        if damage is reported until admin review.</div>
+                                </div>
+                                <span class="badge bg-warning rounded-pill shadow-sm ms-3 px-4 py-2"
+                                    style="color: #0f172a; font-size: 0.7rem;">LOCKED</span>
+                            </div>
+
+                            <div class="d-flex align-items-center px-4 py-3 rounded-4 shadow-sm mt-1"
+                                style="background: rgba(239, 68, 68, 0.8); color: white; border: 1px solid rgba(239, 68, 68, 0.4);">
+                                <div class="flex-shrink-0 bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 46px; height: 46px;">
+                                    <i class='bx bxs-error-circle' style="font-size: 1.5rem; color: white;"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bolder text-white mb-1" style="font-size: 0.95rem;">Account
+                                        Suspension Threshold</div>
+                                    <div class="small text-white opacity-75">Accounts dropping below 50 Trust Points are
+                                        automatically suspended.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width SMS Commands -->
+            <div class="row mt-4 mb-2">
+                <div class="col-12">
+                    <div class="panel card border-0 p-4 shadow"
+                        style="background-color: var(--bg-panel); border-radius: 1rem;">
+                        <h6 class="fw-bolder mb-4 pb-3 border-bottom d-flex align-items-center gap-2"
+                            style="color: var(--text-h);">
+                            All SMS Commands
+                        </h6>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 small">
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;"> [bike] [from] to [to]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Start a ride</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">done [bike]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">End a ride</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">good [bike]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Confirm working condition
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">broken [bike]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Report damage</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">missing [bike]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Report lost bike</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">delivered [bike] [location]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Mark as delivered to hub
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">points</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Check trust points</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">search all</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Check bike availability
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">locations</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">List active stations</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">usage [bike]</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Check status & recent trips</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">bikeshare help</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Get command list</div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 rounded-3 h-100"
+                                    style="background: rgba(148, 163, 184, 0.05); border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    <code class="fw-bold px-2 py-1 rounded flex-shrink-0"
+                                        style="background: rgba(15, 23, 42, 0.05); color: var(--text-h); border: 1px solid rgba(15, 23, 42, 0.1); font-size: 0.8rem;">how</code>
+                                    <div class="ms-auto fw-medium text-end ps-2"
+                                        style="font-size: 0.8rem; color: var(--text-muted);">Get system guidelines</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        </div>
+        <!-- LEADERBOARDS CONTAINER -->
+        <div id="leaderboards-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; height: calc(100vh - 3rem); overflow-y: auto;">
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div
+                    style="width: 5px; height: 32px; background-color: var(--up-green, #006a4e); border-radius: 4px; margin-right: 12px;">
+                </div>
+                <div>
+                    <h3 class="h4 fw-bolder mb-0" style="color: var(--text-h); letter-spacing: -0.03em;">Leaderboards
+                    </h3>
+                    <p class="small text-muted mb-0" style="font-weight: 500; margin-top: 2px;">Top riders and most
+                        active hubs</p>
+                </div>
+            </div>
+
+            <div class="row g-4 flex-grow-1" style="min-height: 500px;">
+                <!-- Top Riders -->
+                <div class="col-12 d-flex flex-column">
+                    <div class="panel card border-0 p-0 shadow-sm d-flex flex-column mb-4"
+                        style="background-color: transparent; box-shadow: none !important;">
+                        <div class="p-4 border-bottom d-flex align-items-center justify-content-between flex-shrink-0"
+                            style="background-color: var(--bg-panel); border-radius: var(--radius-md) var(--radius-md) 0 0;">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="fw-bold text-dark mb-0 ms-1"
+                                        style="font-size: 1.1rem; letter-spacing: -0.01em;">Top Trusted Riders</h6>
+                                </div>
+                                <span class="ms-1 mt-1 text-muted small" style="font-size: 0.75rem;"><i
+                                        class='bx bx-info-circle'></i> Shows total accumulated Leaderboard Score
+                                    (uncapped)</span>
+                            </div>
+                            <span class="badge bg-light text-muted border">Bi-Weekly</span>
+                        </div>
+
+                        <!-- Podium Section -->
+                        <div class="p-4"
+                            style="background-color: var(--bg-panel); border-radius: 0 0 var(--radius-md) var(--radius-md);">
+                            <div class="d-flex justify-content-center align-items-end mx-auto" id="podium-container"
+                                style="gap: 15px; max-width: 650px; padding-top: 25px;">
+                                <div class="text-center py-5 text-muted small w-100">Loading podium...</div>
+                            </div>
+                        </div>
+
+                        <!-- Rank 4 and below -->
+                        <div class="mt-3">
+                            <ul class="list-unstyled d-flex flex-column gap-2 mb-0" id="top-riders-list">
+                                <li class="text-center py-3 text-muted small">Loading riders list...</li>
+                            </ul>
+
+                            <!-- Current User Rank Row -->
+                            <div class="mt-3 p-3 shadow-sm position-relative overflow-hidden"
+                                id="current-user-rank-container"
+                                style="background: linear-gradient(135deg, rgba(var(--up-maroon-rgb, 123, 17, 19), 0.05), rgba(var(--up-maroon-rgb, 123, 17, 19), 0.1)); border-radius: var(--radius-md); border: 1px solid rgba(var(--up-maroon-rgb, 123, 17, 19), 0.2);">
+                                <div class="text-center text-muted small">Loading your rank...</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Active Riders -->
+                <div class="col-lg-6 d-flex flex-column">
+                    <div class="panel card border-0 p-0 shadow-sm h-100 d-flex flex-column"
+                        style="background-color: var(--bg-panel); border-radius: var(--radius-md); overflow: hidden;">
+                        <div class="p-4 border-bottom d-flex align-items-center justify-content-between flex-shrink-0"
+                            style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.03), transparent);">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="fw-bold text-dark mb-0 ms-1"
+                                        style="font-size: 1.1rem; letter-spacing: -0.01em;">Top Active Riders</h6>
+                                </div>
+                                <span class="ms-1 mt-1 text-muted small" style="font-size: 0.75rem;"><i
+                                        class='bx bx-info-circle'></i> Automatically resets every week</span>
+                            </div>
+                            <span class="badge bg-light text-muted border">This Week</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-center align-items-end mx-auto mb-3 px-4"
+                                id="active-riders-podium" style="gap: 10px; padding-top: 25px; padding-bottom: 10px;">
+                                <div class="text-center py-5 text-muted small w-100">Loading podium...</div>
+                            </div>
+                            <ul class="list-unstyled d-flex flex-column gap-2 mb-0 px-4 pb-3 pt-3"
+                                id="top-active-riders-list">
+                                <li class="text-center py-3 text-muted small">Loading riders list...</li>
+                            </ul>
+                        </div>
+
+                        <!-- Pinned Current User Rank (Active Riders) -->
+                        <div class="px-4 py-3 border-top position-relative overflow-hidden"
+                            id="current-user-active-rank-container"
+                            style="background-color: var(--bg-panel); border-radius: 0 0 var(--radius-md) var(--radius-md);">
+                            <div class="text-center text-muted small">Loading your rank...</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Top Hubs -->
+                <div class="col-lg-6 d-flex flex-column">
+                    <div class="panel card border-0 p-0 shadow-sm h-100 d-flex flex-column"
+                        style="background-color: var(--bg-panel); border-radius: var(--radius-md); overflow: hidden;">
+                        <div class="p-4 border-bottom d-flex align-items-center justify-content-between flex-shrink-0"
+                            style="background: linear-gradient(90deg, rgba(220, 38, 38, 0.03), transparent);">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="fw-bold text-dark mb-0 ms-1"
+                                        style="font-size: 1.1rem; letter-spacing: -0.01em;">Most Active Hubs</h6>
+                                </div>
+                                <span class="ms-1 mt-1 text-muted small" style="font-size: 0.75rem;"><i
+                                        class='bx bx-info-circle'></i> Automatically resets every month</span>
+                            </div>
+                            <span class="badge bg-light text-muted border">This Month</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-center align-items-end mx-auto mb-3 px-4"
+                                id="active-hubs-podium" style="gap: 10px; padding-top: 25px; padding-bottom: 10px;">
+                                <div class="text-center py-5 text-muted small w-100">Loading podium...</div>
+                            </div>
+                            <ul class="list-unstyled d-flex flex-column gap-2 mb-0 px-4 pb-3 pt-3" id="top-hubs-list">
+                                <li class="text-center py-3 text-muted small">Loading hubs list...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+    </main>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/theme.js?v=121"></script>
+    <script src="/js/map.js?v=118"></script>
+    <script src="/js/bike.js?v=118"></script>
+    <script src="/js/student.js?v=118"></script>
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => {
+                        console.log('Service Worker registered successfully!', reg);
+                        reg.onupdatefound = () => {
+                            const installingWorker = reg.installing;
+                            installingWorker.onstatechange = () => {
+                                if (installingWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        console.log('New service worker update found! Reloading...');
+                                        window.location.reload();
+                                    }
+                                }
+                            };
+                        };
+                    })
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+
+            // Handle controller changes (new active worker)
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+    <!-- ═══════════════════════════════════════════
+         QUICK START GUIDE MODAL
+    ═══════════════════════════════════════════ -->
+    <div id="quickstart-overlay" class="quickstart-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="qs-title">
+        <div class="quickstart-modal">
+
+            <!-- Progress Bar -->
+            <div class="qs-progress-bar">
+                <div class="qs-progress-fill" id="qs-progress-fill"></div>
+            </div>
+
+            <!-- Steps -->
+            <div class="qs-steps" id="qs-steps">
+
+                <!-- Step 1: Welcome -->
+                <div class="qs-step active" data-step="1">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #7b1113, #b91c1c);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18.5" cy="17.5" r="3.5" />
+                            <circle cx="5.5" cy="17.5" r="3.5" />
+                            <circle cx="15" cy="5" r="1" />
+                            <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                        </svg>
+                    </div>
+                    <div class="qs-step-label">Step 1 of 11</div>
+                    <h2 class="qs-title" id="qs-title">Welcome to UP Bikeshare! 🎉</h2>
+                    <p class="qs-desc">Here's how UP Bikeshare works — a community bike-sharing system for UP students.
+                        Everything is operated via <strong>SMS</strong>, so you don't need internet when you're on the
+                        go.</p>
+                    <div class="qs-highlight-box">
+                        <i class='bx bx-info-circle'></i>
+                        <span>This quick guide walks you through every step: from finding a bike to returning it and
+                            keeping your Trust Score healthy.</span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Check Campus Availability -->
+                <div class="qs-step" data-step="2">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <i class='bx bx-globe' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 2 of 11</div>
+                    <h2 class="qs-title">Check Campus Availability</h2>
+                    <p class="qs-desc">Before heading out, see how many bikes are ready across all UPBS stations on campus:</p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">FORMAT</span>
+                        <code>search all</code>
+                    </div>
+                    <div class="qs-example-block">
+                        <span class="qs-code-label" style="color: var(--up-green);">EXAMPLE</span>
+                        <code style="color: var(--up-green);">search all</code>
+                    </div>
+                    <div class="qs-highlight-box">
+                        <i class='bx bx-info-circle'></i>
+                        <span>The system replies with a live count of available bikes at every hub (e.g. EEE: 3 bikes, VINZONS: 5 bikes).</span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Check Available Bikes at a Hub -->
+                <div class="qs-step" data-step="3">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);">
+                        <i class='bx bx-search-alt' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 3 of 11</div>
+                    <h2 class="qs-title">Check Bikes at a Hub</h2>
+                    <p class="qs-desc">Found a hub with available bikes? Check which exact bicycle numbers are parked there:</p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">FORMAT</span>
+                        <code>search [location]</code>
+                    </div>
+                    <div class="qs-example-block">
+                        <span class="qs-code-label" style="color: var(--up-green);">EXAMPLE</span>
+                        <code style="color: var(--up-green);">search eee</code>
+                    </div>
+                    <p class="qs-desc" style="font-size: 0.82rem;">Replace <strong>[location]</strong> with the station
+                        name (e.g. palma_hall, chk, engg). You'll get a list of bike codes ready for checkout.</p>
+                </div>
+
+                <!-- Step 4: Borrow a Bike -->
+                <div class="qs-step" data-step="4">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);">
+                        <i class='bx bx-cycling' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 4 of 11</div>
+                    <h2 class="qs-title">Borrow a Bike via SMS</h2>
+                    <p class="qs-desc">Found a bike? Text the system to start your ride:</p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">FORMAT</span>
+                        <code>[bike] [from] to [to]</code>
+                    </div>
+                    <div class="qs-example-block">
+                        <span class="qs-code-label" style="color: var(--up-green);">EXAMPLE</span>
+                        <code style="color: var(--up-green);"> 1 eee to chk</code>
+                    </div>
+                    <p class="qs-desc" style="font-size: 0.82rem;">Replace <strong>[bike]</strong> with the bike number,
+                        <strong>[from]</strong> with pickup station, and <strong>[to]</strong> with your destination.
+                    </p>
+                </div>
+
+                <!-- Step 5: Return on Time -->
+                <div class="qs-step" data-step="5">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                        <i class='bx bx-timer' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 5 of 11</div>
+                    <h2 class="qs-title">Return it On Time</h2>
+                    <p class="qs-desc">When you're done riding, text <strong>done</strong> to end the borrow. You have a
+                        <strong>6-hour limit</strong>.
+                    </p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">FORMAT</span>
+                        <code>done [bike]</code>
+                    </div>
+                    <div class="qs-example-block">
+                        <span class="qs-code-label" style="color: var(--up-green);">EXAMPLE</span>
+                        <code style="color: var(--up-green);">done 1</code>
+                    </div>
+                    <div class="qs-highlight-box qs-warning-box">
+                        <i class='bx bx-error-alt'></i>
+                        <span>Going over 6 hours deducts <strong>−5 pts per hour</strong> of overtime. Return on
+                            time!</span>
+                    </div>
+                </div>
+
+                <!-- Step 6: Review the Bike -->
+                <div class="qs-step" data-step="6">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #006a4e, #10b981);">
+                        <i class='bx bx-check-shield' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 6 of 11</div>
+                    <h2 class="qs-title">Review the Bike Condition</h2>
+                    <p class="qs-desc">After returning, the <em>next rider</em> will inspect the bike and reply to
+                        confirm its condition. When you pick up a bike, you may also be asked to reply:</p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">GOOD CONDITION</span>
+                        <code>good [bike]</code>
+                    </div>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">DAMAGED CONDITION</span>
+                        <code>broken [bike]</code>
+                    </div>
+                    <div class="qs-highlight-box">
+                        <i class='bx bx-info-circle'></i>
+                        <span>Confirming honestly earns you <strong>+1 trust point</strong>. Ignoring the prompt deducts
+                            <strong>−2 pts</strong>.</span>
+                    </div>
+                </div>
+
+                <!-- Step 7: Get Back to Fixing Stations -->
+                <div class="qs-step" data-step="7">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                        <i class='bx bx-wrench' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 7 of 11</div>
+                    <h2 class="qs-title">Deliver a Broken Bike to a Hub</h2>
+                    <p class="qs-desc">If a bike is broken or needs repair, you can bring it to a hub and notify the
+                        system:</p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">FORMAT</span>
+                        <code>delivered [bike] [location]</code>
+                    </div>
+                    <div class="qs-example-block">
+                        <span class="qs-code-label" style="color: var(--up-green);">EXAMPLE</span>
+                        <code style="color: var(--up-green);">delivered 1 chk</code>
+                    </div>
+                    <div class="qs-highlight-box">
+                        <i class='bx bx-info-circle'></i>
+                        <span>This logs the bike as returned to a repair hub and helps the admin track damaged bikes
+                            quickly.</span>
+                    </div>
+                </div>
+
+                <!-- Step 8: Report a Bike -->
+                <div class="qs-step" data-step="8">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                        <i class='bx bx-error-circle' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 8 of 11</div>
+                    <h2 class="qs-title">Report a Bike</h2>
+                    <p class="qs-desc">Spotted a damaged or missing bike? Report it immediately so admins can act fast:
+                    </p>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">BROKEN BIKE</span>
+                        <code>broken [bike]</code>
+                    </div>
+                    <div class="qs-code-block">
+                        <span class="qs-code-label">MISSING BIKE</span>
+                        <code>missing [bike]</code>
+                    </div>
+                    <div class="qs-highlight-box">
+                        <i class='bx bxs-shield-alt-2'></i>
+                        <span>Verified honest reports earn you <strong>+5 pts</strong>. False reports deduct <strong>−5
+                                pts</strong>.</span>
+                    </div>
+                </div>
+
+                <!-- Step 9: Other Functions -->
+                <div class="qs-step" data-step="9">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #0f766e, #14b8a6);">
+                        <i class='bx bx-command' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 9 of 11</div>
+                    <h2 class="qs-title">Other Useful Commands</h2>
+                    <p class="qs-desc">Here are more SMS commands you can use anytime:</p>
+                    <div class="qs-nav-list">
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(14,165,233,0.1); color: #0ea5e9;"><i
+                                    class='bx bx-map'></i></span>
+                            <div><code style="font-size:0.82rem;">locations</code> — List all active stations</div>
+                        </div>
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(14,165,233,0.1); color: #0ea5e9;"><i
+                                    class='bx bx-current-location'></i></span>
+                            <div><code style="font-size:0.82rem;">usage [bike]</code> — Check where a bike is parked
+                            </div>
+                        </div>
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(14,165,233,0.1); color: #0ea5e9;"><i
+                                    class='bx bx-help-circle'></i></span>
+                            <div><code style="font-size:0.82rem;">how</code> — Get quick instructions via SMS</div>
+                        </div>
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(14,165,233,0.1); color: #0ea5e9;"><i
+                                    class='bx bx-chat'></i></span>
+                            <div><code style="font-size:0.82rem;">bikeshare help</code> — Full command list via SMS
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 10: Trust Score -->
+                <div class="qs-step" data-step="10">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #006a4e, #10b981);">
+                        <i class='bx bxs-shield-alt-2' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 10 of 11</div>
+                    <h2 class="qs-title">Your Trust Score</h2>
+                    <p class="qs-desc">Every student has a Trust Score. Ride responsibly to earn points — violations
+                        cost you.</p>
+                    <div class="qs-score-grid">
+                        <div class="qs-score-item qs-score-plus">
+                            <span class="qs-score-val" id="qs-val-honest-return">+1</span>
+                            <span class="qs-score-lbl">Honest Return</span>
+                        </div>
+                        <div class="qs-score-item qs-score-plus">
+                            <span class="qs-score-val" id="qs-val-dispute-reward">+5</span>
+                            <span class="qs-score-lbl">Dispute Reward</span>
+                        </div>
+                        <div class="qs-score-item qs-score-minus">
+                            <span class="qs-score-val" id="qs-val-overtime">−5/hr</span>
+                            <span class="qs-score-lbl">Overtime</span>
+                        </div>
+                        <div class="qs-score-item qs-score-minus">
+                            <span class="qs-score-val" id="qs-val-hit-run">−35</span>
+                            <span class="qs-score-lbl">Hit &amp; Run</span>
+                        </div>
+                    </div>
+                    <div class="qs-highlight-box qs-warning-box">
+                        <i class='bx bx-lock-alt'></i>
+                        <span>Dropping below <strong>50 points</strong> suspends your account automatically.</span>
+                    </div>
+                </div>
+
+                <!-- Step 11: Navigate the Dashboard -->
+                <div class="qs-step" data-step="11">
+                    <div class="qs-icon-wrap" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                        <i class='bx bx-layout' style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="qs-step-label">Step 11 of 11</div>
+                    <h2 class="qs-title">Your Dashboard at a Glance</h2>
+                    <p class="qs-desc">Use the sidebar to explore all sections:</p>
+                    <div class="qs-nav-list">
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon"
+                                style="background: rgba(123,17,19,0.1); color: var(--up-maroon);"><i
+                                    class='bx bxs-map'></i></span>
+                            <div><strong>Dashboard</strong> — Live map, fleet status &amp; active stations</div>
+                        </div>
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(0,106,78,0.1); color: var(--up-green);"><i
+                                    class='bx bx-user-circle'></i></span>
+                            <div><strong>Summary</strong> — Your trust score, active ride timer &amp; ride log</div>
+                        </div>
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(14,165,233,0.1); color: #0ea5e9;"><i
+                                    class='bx bxs-group'></i></span>
+                            <div><strong>Community</strong> — Wall of honor, merits &amp; SMS commands</div>
+                        </div>
+                        <div class="qs-nav-item">
+                            <span class="qs-nav-icon" style="background: rgba(124,58,237,0.1); color: #7c3aed;"><i
+                                    class='bx bx-trophy'></i></span>
+                            <div><strong>Leaderboards</strong> — See top trusted &amp; most active riders</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Controls -->
+            <div class="qs-footer">
+                <button class="qs-btn qs-btn-ghost" id="qs-btn-back" style="visibility: hidden;">← Back</button>
+                <div class="qs-dots" id="qs-dots">
+                    <span class="qs-dot active" data-dot="1"></span>
+                    <span class="qs-dot" data-dot="2"></span>
+                    <span class="qs-dot" data-dot="3"></span>
+                    <span class="qs-dot" data-dot="4"></span>
+                    <span class="qs-dot" data-dot="5"></span>
+                    <span class="qs-dot" data-dot="6"></span>
+                    <span class="qs-dot" data-dot="7"></span>
+                    <span class="qs-dot" data-dot="8"></span>
+                    <span class="qs-dot" data-dot="9"></span>
+                    <span class="qs-dot" data-dot="10"></span>
+                    <span class="qs-dot" data-dot="11"></span>
+                </div>
+                <button class="qs-btn qs-btn-primary" id="qs-btn-next">Next →</button>
+            </div>
+
+            <!-- Close button -->
+            <button class="qs-close-btn" id="qs-close-btn" aria-label="Close guide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logout-confirm-modal" class="modal-overlay"
+        style="display: none; background: rgba(11, 15, 25, 0.6); backdrop-filter: blur(8px); z-index: 99999; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center;">
+        <div class="modal-card"
+            style="max-width: 380px; width: 90%; padding: 2rem; background-color: var(--bg-panel); border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h4 class="fw-bold mb-3 text-center" style="color: var(--text-h); letter-spacing: -0.02em;">Confirm Logout
+            </h4>
+            <p class="text-center small mb-4" style="color: var(--text-muted);">Are you sure you want to end your
+                session?</p>
+            <div class="d-flex gap-3">
+                <button id="btn-logout-cancel" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background-color: var(--bg-main); color: var(--text-h); border: 1px solid var(--border);">Cancel</button>
+                <button id="btn-logout-confirm" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background: var(--up-maroon); color: white; border: none;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

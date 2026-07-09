@@ -1,0 +1,18 @@
+[Unit]
+Description=Bikeshare Gateway SMS Service
+After=network-online.target bikeshare-worker.service
+Wants=bikeshare-worker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /home/stph/bikeshareAPI_2/gateway-server/server.js
+WorkingDirectory=/home/stph/bikeshareAPI_2/gateway-server
+Restart=always
+User=stph
+SyslogIdentifier=bikeshare-gateway
+StandardInput=null
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

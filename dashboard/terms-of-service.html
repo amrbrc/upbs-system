@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UP Bikeshare - Terms of Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --up-maroon: #7b1113;
+            --up-green: #006a4e;
+            --bg-dark: #0b0f19;
+            --bg-panel: #111827;
+            --border: #1f2937;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            color: var(--text-main) !important;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand span {
+            color: var(--up-maroon);
+        }
+
+        .terms-container {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            color: var(--text-main);
+            font-weight: 800;
+            margin-bottom: 10px;
+            font-size: 2.25rem;
+        }
+
+        h2 {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--up-maroon);
+            padding-left: 12px;
+        }
+
+        p, li {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .last-updated {
+            color: var(--up-maroon);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .badge-points {
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .badge-deduction {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .badge-reward {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 0;
+            background-color: var(--bg-panel);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><span>UP</span> BIKESHARE</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="terms-container">
+                    <h1>Terms of Service</h1>
+                    <div class="last-updated">Last Updated: July 6, 2026</div>
+
+                    <p>Welcome to UP Bikeshare. By registering, logging into, or using our campus bicycle sharing system—including sending text messages (SMS) to our gateway or utilizing our Facebook Messenger Chatbot—you agree to be bound by these Terms of Service. Please read them carefully.</p>
+
+                    <h2>1. Eligibility and Membership</h2>
+                    <p>To register and use the UP Bikeshare program, you must:</p>
+                    <ul>
+                        <li>Be an active student, faculty, or staff member of the university.</li>
+                        <li>Possess a verified and active mobile phone number.</li>
+                        <li>Complete the registration process and maintain a Trust Score above the suspension threshold.</li>
+                    </ul>
+
+                    <h2>2. Rules of Checkout & Operation</h2>
+                    <ul>
+                        <li><strong>Standard Borrow Limit:</strong> The standard borrow duration limit is <strong>6 hours</strong> per ride. You must return and lock the bicycle at a designated hub within this limit.</li>
+                        <li><strong>Proper Parking:</strong> Bicycles must always be parked and locked securely inside the official physical boundary coordinates of a UP Bikeshare Hub. Abandoning a bicycle outside of a hub is a breach of service.</li>
+                        <li><strong>Damage Reporting:</strong> If you find a bicycle broken or missing, you must report it immediately using the system interface or text command.</li>
+                    </ul>
+
+                    <h2>3. The Trust Score & Demerit System</h2>
+                    <p>Your membership standing is regulated by a points-based Trust System. Default rules and point modifications include:</p>
+                    <ul>
+                        <li><strong>Starting Score:</strong> Newly registered accounts start with <strong>80 points</strong>.</li>
+                        <li><strong>Suspension Limit:</strong> If your Trust Score falls below <strong>50 points</strong>, your account is automatically suspended. You will not be allowed to borrow any bicycles.</li>
+                        <li><span class="badge-points badge-deduction">−35 Points</span> <strong>Hit-and-Run Penalty:</strong> Deducted if a user leaves a bike broken without reporting it, and the next borrower reports the damage.</li>
+                        <li><span class="badge-points badge-deduction">−5 Points</span> <strong>False Damage Report:</strong> Deducted for reporting fake damages or false missing reports.</li>
+                        <li><span class="badge-points badge-deduction">−5 Points / Hour</span> <strong>Overtime Penalty:</strong> Deducted for every hour you exceed the 6-hour borrow limit.</li>
+                        <li><span class="badge-points badge-reward">+5 Points</span> <strong>Bicycle Transport Reward:</strong> Awarded to users who volunteer to deliver a reported broken/stranded bike to the maintenance hub.</li>
+                        <li><span class="badge-points badge-reward">+5 Points</span> <strong>Honesty Reward:</strong> Awarded when a clean report is confirmed by the subsequent rider.</li>
+                        <li><span class="badge-points badge-reward">+30 Points</span> <strong>Community Service Reward:</strong> Awarded for completing a verified volunteer shift at the hub.</li>
+                    </ul>
+
+                    <h2>4. Dispute Resolution & Appeal Protocol</h2>
+                    <p>To protect riders from malicious reports, UP Bikeshare enforces a **Dispute Appeal Protocol**:</p>
+                    <ol>
+                        <li>If a subsequent rider reports your checked-out bike as broken, your account is automatically frozen.</li>
+                        <li>To appeal this decision, you must contact our Facebook Page (m.me/upbikeshare) and use the automated chatbot to upload a photo of the bicycle parked and locked in good condition.</li>
+                        <li>An administrator will review the submitted image evidence and issue a final verdict of **Innocent** (points and account restored) or **Guilty** (demerits applied).</li>
+                    </ol>
+
+                    <h2>5. Term and Termination</h2>
+                    <p>We reserve the right to suspend or terminate your access to the UP Bikeshare system if you violate these terms, damage equipment, or engage in behavior that harms the community or compromises system assets.</p>
+
+                    <h2>6. Contact Us</h2>
+                    <p>If you have any questions, disputes, or feedback regarding these terms, please visit the physical UP Bikeshare Hub on campus or message our administrator team on our official Facebook Page.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-muted">
+        <div class="container">
+            <p class="mb-0">&copy; 2026 UP Bikeshare Organization. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

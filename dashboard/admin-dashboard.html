@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UP Bikeshare | Dashboard</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#24262d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=121">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar d-flex flex-column justify-content-between p-4">
+        <div class="brand d-flex align-items-center gap-3 mb-5">
+            <div class="brand-icon d-flex justify-content-center align-items-center shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18.5" cy="17.5" r="3.5" />
+                    <circle cx="5.5" cy="17.5" r="3.5" />
+                    <circle cx="15" cy="5" r="1" />
+                    <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1 class="h6 mb-0 fw-bold">UP Bikeshare</h1>
+                <p class="small text-muted mb-0">Admin Dashboard</p>
+            </div>
+        </div>
+
+        <ul class="nav-menu list-unstyled p-0 mb-0 d-flex flex-column gap-2">
+            <li class="nav-item active" id="nav-dashboard">Dashboard</li>
+            <li class="nav-item" id="nav-map">Map View</li>
+            <li class="nav-item" id="nav-analytics">Analytics</li>
+            <li class="nav-item" id="nav-registration">Registration & Setup</li>
+            <li class="nav-item" id="nav-logs">Report Logs</li>
+            <li class="nav-item" id="nav-points-settings">Rules & Points Configuration</li>
+            <li class="nav-item" id="nav-settings">Settings</li>
+        </ul>
+
+        <div class="sidebar-bottom mt-auto pt-4 border-top">
+            <div class="d-flex gap-2 mb-3">
+                <button id="theme-toggle" class="theme-toggle btn flex-fill" title="Toggle Theme"><i
+                        class="bi bi-moon-fill"></i></button>
+                <div class="theme-toggle flex-fill d-flex align-items-center justify-content-center" id="live-time"
+                    style="flex: 2; font-size: 0.85rem; font-weight: 600;">--:--:--
+                </div>
+            </div>
+            <button id="btn-admin-logout"
+                class="btn btn-outline-danger w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2"
+                style="border-radius: var(--radius-sm); display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Log Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MOBILE HEADER -->
+    <header
+        class="mobile-header d-flex d-lg-none align-items-center justify-content-between px-3 py-2 border-bottom shadow-sm"
+        style="background: var(--bg-sidebar); z-index: 99; flex-shrink: 0; transition: background 0.3s var(--ease);">
+        <div class="d-flex align-items-center gap-3">
+            <button id="mobile-menu-toggle"
+                class="btn btn-link p-0 border-0 d-flex align-items-center justify-content-center"
+                style="width: 38px; height: 38px; border-radius: 8px; font-size: 1.35rem; text-decoration: none; color: var(--text-h) !important; background: var(--border);">☰</button>
+            <div class="brand-icon d-flex justify-content-center align-items-center shadow-sm"
+                style="width: 32px; height: 32px; border-radius: 8px; font-size: 1rem; box-shadow: 0 4px 10px rgba(123, 17, 19, 0.2) !important;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18.5" cy="17.5" r="3.5" />
+                    <circle cx="5.5" cy="17.5" r="3.5" />
+                    <circle cx="15" cy="5" r="1" />
+                    <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                </svg>
+            </div>
+            <div class="d-flex flex-column">
+                <h1 class="h6 mb-0 fw-bold text-dark"
+                    style="color: var(--text-h) !important; font-size: 0.9rem; letter-spacing: -0.01em; line-height: 1.2;">
+                    UP Bikeshare</h1>
+                <span class="text-muted"
+                    style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">Admin
+                    Console</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-wrapper flex-grow-1 d-flex flex-column">
+
+        <!-- HERO MAP -->
+        <div class="hero-map-section border-bottom">
+            <div id="station-map" class="h-100 w-100"></div>
+        </div>
+
+        <!-- DASHBOARD DATA -->
+        <div id="dashboard-container" class="data-container container-fluid px-4 py-3">
+            <div class="row g-4">
+
+                <!-- LEFT COLUMN -->
+                <div class="col-lg-6 col-left">
+                    <div id="panel-admin-stats" class="top-stats d-flex gap-3 mb-4">
+                        <div class="stat-box card flex-fill border p-3 shadow-sm">
+                            <span class="lbl text-muted text-uppercase fw-semibold mb-2">Total Fleet</span>
+                            <span class="val h2 fw-bold mb-0" id="stat-total-bikes">--</span>
+                        </div>
+                        <div class="stat-box card flex-fill border p-3 shadow-sm">
+                            <span class="lbl text-muted text-uppercase fw-semibold mb-2">Active Stations</span>
+                            <span class="val h2 fw-bold mb-0" id="stat-total-stations">--</span>
+                        </div>
+                        <div class="stat-box card flex-fill border p-3 shadow-sm">
+                            <span class="lbl text-muted text-uppercase fw-semibold mb-2">Last Updated</span>
+                            <span class="val h4 fw-bold mb-0 py-1" id="stat-last-updated"
+                                style="white-space: nowrap;">--:--</span>
+                        </div>
+                    </div>
+
+                    <div id="panel-active-stations" class="panel card border p-4 shadow-sm mb-4">
+                        <div class="panel-header d-flex justify-content-between align-items-center mb-3">
+                            <div class="panel-title h6 mb-0 fw-bold">Active Stations</div>
+                        </div>
+                        <div id="stations-grid" class="custom-scroll" style="max-height: 400px; padding-right: 4px;">
+                            <!-- Stations rendered here via bike.js -->
+                        </div>
+                    </div>
+
+                    <div id="panel-bike-history" class="panel card border p-4 shadow-sm">
+                        <div class="panel-title h6 mb-3 fw-bold">Bike History</div>
+                        <div class="input-group mb-3 border rounded overflow-hidden">
+                            <input type="text" id="history-bike-code" class="form-control border-0"
+                                placeholder="Enter Bike Code">
+                            <button id="btn-search-history" class="btn btn-accent px-4 border-0">Search</button>
+                        </div>
+                        <div id="history-results" class="custom-scroll d-flex flex-column gap-2"
+                            style="max-height: 250px; padding-right: 4px; font-size: 0.8rem; color: var(--text-muted);">
+                            No records loaded.</div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-lg-6 col-right">
+                    <div id="panel-bicycle-fleet" class="panel card border p-4 shadow-sm mb-4">
+                        <div class="panel-header d-flex justify-content-between align-items-center mb-3">
+                            <div class="panel-title h6 mb-0 fw-bold">Bicycle Fleet</div>
+                        </div>
+                        <div id="bikes-grid" class="custom-scroll"
+                            style="max-height: 350px; padding-right: 4px; align-content: start;">
+                            <!-- Bikes rendered here via bike.js -->
+                        </div>
+                    </div>
+
+                    <!-- DEVELOPER B PANELS -->
+                    <div id="panel-search-center" class="panel card border p-4 shadow-sm d-flex flex-column"
+                        style="min-height: 350px;">
+                        <div class="panel-title h6 mb-3 fw-bold">Admin Search Center</div>
+                        <div class="input-group mb-3 border rounded overflow-hidden">
+                            <select id="admin-search-type" class="form-select border-0 text-muted"
+                                style="max-width: 130px; background-color: var(--bg-main);">
+                                <option value="bike">Bicycles</option>
+                                <option value="member">Members</option>
+                            </select>
+                            <input type="text" id="admin-search-input" class="form-control border-0"
+                                placeholder="Enter Code, Phone or Name...">
+                            <button id="btn-admin-search" class="btn btn-accent px-4 border-0">Search</button>
+                        </div>
+                        <div id="admin-search-results" class="custom-scroll d-flex flex-column gap-2"
+                            style="flex: 1; overflow-y: auto;">
+                            <!-- Placeholder Text -->
+                            <div class="text-muted small text-center mt-4 p-4 rounded d-flex flex-column align-items-center justify-content-center"
+                                style="border: 2px dashed rgba(156, 163, 175, 0.4); background-color: transparent; transition: all 0.3s ease;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" class="mb-2" style="opacity: 0.5;">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <span style="opacity: 0.8;">Select a category and enter a query to search.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ANALYTICS CONTAINER -->
+        <div id="analytics-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; box-sizing: border-box; overflow-y: auto;">
+
+            <!-- SECTION 1: OVERALL SYSTEM ANALYTICS -->
+            <div class="mb-4">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <div style="border-left: 4px solid var(--up-maroon); padding-left: 10px;">
+                        <h3 class="h5 mb-0 fw-bolder"
+                            style="color: var(--up-maroon); letter-spacing: -0.02em; text-transform: uppercase;">Overall
+                            System Analytics</h3>
+                        <p class="mb-0 fw-semibold" style="font-size: 0.78rem; color: var(--text-muted);">Lifetime
+                            aggregated metrics</p>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4" style="align-content: start;">
+                    <!-- Overall Stats Banner -->
+                    <div class="col-12">
+                        <div class="d-flex gap-3 flex-wrap">
+                            <div class="stat-box card flex-fill border p-3 shadow-sm" style="min-width: 120px;">
+                                <span class="lbl text-muted text-uppercase fw-semibold mb-2">Total Rides
+                                    (All-Time)</span>
+                                <span class="val h2 fw-bold mb-0" id="analytics-overall-total-rides">--</span>
+                            </div>
+                            <div class="stat-box card flex-fill border p-3 shadow-sm" style="min-width: 120px;">
+                                <span class="lbl text-muted text-uppercase fw-semibold mb-2">Peak Usage Hour
+                                    (All-Time)</span>
+                                <span class="val h2 fw-bold mb-0" id="analytics-overall-peak-hour">--</span>
+                            </div>
+                            <div class="stat-box card flex-fill border p-3 shadow-sm" style="min-width: 120px;">
+                                <span class="lbl text-muted text-uppercase fw-semibold mb-2">Top Hub (All-Time)</span>
+                                <span class="val h4 fw-bold mb-0 py-1" id="analytics-overall-top-hub"
+                                    style="white-space: nowrap; text-transform: uppercase;">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Peak Hours Line Chart -->
+                    <div class="col-lg-6" id="analytics-overall-chart-hours-col">
+                        <div class="panel card border p-4 shadow-sm d-flex flex-column" style="height: 380px;">
+                            <div class="panel-title h6 mb-3 fw-bold">Peak Usage Hours (All-Time)</div>
+                            <div style="flex: 1; position: relative; width: 100%; min-height: 0;">
+                                <canvas id="chart-overall-peak-hours" style="width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Popular Stations Doughnut Chart -->
+                    <div class="col-lg-6" id="analytics-overall-chart-stations-col">
+                        <div class="panel card border p-4 shadow-sm d-flex flex-column" style="height: 380px;">
+                            <div class="panel-title h6 mb-3 fw-bold">Most Popular Stations (All-Time)</div>
+                            <div
+                                style="flex: 1; position: relative; display: flex; justify-content: center; align-items: center; min-height: 0;">
+                                <div
+                                    style="width: 260px; height: 260px; position: relative; display: flex; justify-content: center; align-items: center;">
+                                    <canvas id="chart-overall-popular-stations"
+                                        style="width: 100%; height: 100%;"></canvas>
+                                    <!-- Center Label -->
+                                    <div
+                                        style="position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                                        <span
+                                            style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Total
+                                            Rides</span>
+                                        <span
+                                            style="font-size: 1.5rem; font-weight: 800; color: var(--text-h); display: block;"
+                                            id="doughnut-overall-center-val">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr
+                style="border-color: var(--border); opacity: 0.15; margin-top: 4rem !important; margin-bottom: 3rem !important;">
+
+            <!-- SECTION 2: PERIODIC SYSTEM ANALYTICS -->
+            <div>
+                <!-- Analytics Header: Period Label + Timeframe Filter Bar -->
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 1rem; gap: 12px;">
+                    <div style="border-left: 4px solid var(--up-maroon); padding-left: 10px; min-width: 0;">
+                        <h3 class="h5 mb-0 fw-bolder"
+                            style="color: var(--up-maroon); letter-spacing: -0.02em; text-transform: uppercase;"
+                            id="periodic-analytics-title">Periodic Analytics</h3>
+                        <p class="mb-0 fw-semibold"
+                            style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            Showing data for <span id="analytics-month-label"
+                                style="color: var(--text-h); font-weight: 700;">--</span>
+                        </p>
+                    </div>
+                    <!-- Timeframe Filter Bar -->
+                    <div class="d-flex align-items-center gap-3 flex-wrap" id="analytics-filter-bar"
+                        style="background: var(--bg-panel); border: 1px solid var(--border); padding: 8px 14px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                        <!-- Mode Indicator & Dropdown -->
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted fw-bold small text-uppercase"
+                                style="letter-spacing: 0.5px; font-size: 0.75rem;">View:</span>
+                            <select id="analytics-period-select" class="form-select form-select-sm fw-semibold"
+                                style="width: auto; min-width: 140px; border-radius: 8px; background-color: var(--bg-main); border: 1px solid var(--border); color: var(--text-h); padding: 6px 30px 6px 12px; cursor: pointer;">
+                                <option value="month">Monthly</option>
+                                <option value="year">Yearly</option>
+                            </select>
+                        </div>
+                        <!-- Year Input & Datalist -->
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted fw-bold small text-uppercase"
+                                style="letter-spacing: 0.5px; font-size: 0.75rem;">Year:</span>
+                            <input type="number" id="analytics-year-select" list="analytics-years-datalist" min="2000" max="2100" class="form-control form-control-sm fw-semibold"
+                                style="width: 105px; border-radius: 8px; background-color: var(--bg-main); border: 1px solid var(--border); color: var(--text-h); padding: 6px 10px; text-align: center;">
+                            <datalist id="analytics-years-datalist">
+                                <!-- Populated by JS -->
+                            </datalist>
+                        </div>
+                        <!-- Month Indicator & Dropdown -->
+                        <div class="d-flex align-items-center gap-2" id="analytics-month-wrapper">
+                            <span class="text-muted fw-bold small text-uppercase"
+                                style="letter-spacing: 0.5px; font-size: 0.75rem;">Month:</span>
+                            <select id="analytics-month-select" class="form-select form-select-sm fw-semibold"
+                                style="width: auto; min-width: 130px; border-radius: 8px; background-color: var(--bg-main); border: 1px solid var(--border); color: var(--text-h); padding: 6px 30px 6px 14px; cursor: pointer;">
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4" style="align-content: start;">
+                    <!-- Top Stats Banner -->
+                    <div class="col-12">
+                        <div class="d-flex gap-3 flex-wrap">
+                            <div class="stat-box card flex-fill border p-3 shadow-sm" style="min-width: 120px;">
+                                <span class="lbl text-muted text-uppercase fw-semibold mb-2">Total Rides</span>
+                                <span class="val h2 fw-bold mb-0" id="analytics-total-rides">--</span>
+                            </div>
+                            <div class="stat-box card flex-fill border p-3 shadow-sm" style="min-width: 120px;">
+                                <span class="lbl text-muted text-uppercase fw-semibold mb-2">Peak Usage Hour</span>
+                                <span class="val h2 fw-bold mb-0" id="analytics-peak-hour">--</span>
+                            </div>
+                            <div class="stat-box card flex-fill border p-3 shadow-sm" style="min-width: 120px;">
+                                <span class="lbl text-muted text-uppercase fw-semibold mb-2">Top Hub</span>
+                                <span class="val h4 fw-bold mb-0 py-1" id="analytics-top-hub"
+                                    style="white-space: nowrap; text-transform: uppercase;">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Data Message -->
+                    <div class="col-12" id="analytics-no-data" style="display: none;">
+                        <div class="text-center py-5" style="color: var(--text-muted);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                                viewBox="0 0 16 16"
+                                style="opacity: 0.3; margin-bottom: 12px; display: block; margin-inline: auto;">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path
+                                    d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+                            </svg>
+                            <p class="fw-semibold mb-0" id="no-data-msg-text">No ride data for this period.</p>
+                            <p class="small">Try selecting a different period or year from the filters above.</p>
+                        </div>
+                    </div>
+
+                    <!-- Peak Hours Line Chart -->
+                    <div class="col-lg-6" id="analytics-chart-hours-col">
+                        <div class="panel card border p-4 shadow-sm d-flex flex-column" style="height: 380px;">
+                            <div class="panel-title h6 mb-3 fw-bold" id="monthly-peak-hours-title">Peak Usage Hours
+                            </div>
+                            <div style="flex: 1; position: relative; width: 100%; min-height: 0;">
+                                <canvas id="chart-peak-hours" style="width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Stations Doughnut Chart -->
+                    <div class="col-lg-6" id="analytics-chart-stations-col">
+                        <div class="panel card border p-4 shadow-sm d-flex flex-column" style="height: 380px;">
+                            <div class="panel-title h6 mb-3 fw-bold" id="monthly-popular-stations-title">Most Popular
+                                Stations</div>
+                            <div
+                                style="flex: 1; position: relative; display: flex; justify-content: center; align-items: center; min-height: 0;">
+                                <div
+                                    style="width: 260px; height: 260px; position: relative; display: flex; justify-content: center; align-items: center;">
+                                    <canvas id="chart-popular-stations" style="width: 100%; height: 100%;"></canvas>
+                                    <!-- Center Label -->
+                                    <div
+                                        style="position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                                        <span
+                                            style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Total
+                                            Rides</span>
+                                        <span
+                                            style="font-size: 1.5rem; font-weight: 800; color: var(--text-h); display: block;"
+                                            id="doughnut-center-val">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- POINTS SETTINGS CONTAINER -->
+        <div id="points-settings-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; height: calc(100vh - 3rem); box-sizing: border-box; overflow: auto;">
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div
+                    style="width: 5px; height: 32px; background-color: var(--up-maroon); border-radius: 4px; margin-right: 12px;">
+                </div>
+                <div>
+                    <h3 class="h4 fw-bolder mb-0"
+                        style="color: var(--up-maroon); letter-spacing: -0.03em; text-transform: uppercase;">Rules &
+                        Points Configuration</h3>
+                    <p class="small text-muted mb-0" style="font-weight: 500; margin-top: 2px;">Adjust dynamic system
+                        values</p>
+                </div>
+            </div>
+            <div class="row g-4 mt-1" id="points-settings-grid">
+                <div class="col-12">
+                    <p class="text-muted small">Loading settings...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTRATION & SETUP CONTAINER -->
+        <div id="registration-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; height: calc(100vh - 3rem); box-sizing: border-box; overflow: auto;">
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div
+                    style="width: 5px; height: 32px; background-color: var(--up-maroon); border-radius: 4px; margin-right: 12px;">
+                </div>
+                <div>
+                    <h3 class="h4 fw-bolder mb-0"
+                        style="color: var(--up-maroon); letter-spacing: -0.03em; text-transform: uppercase;">
+                        Registration &
+                        Setup</h3>
+                    <p class="small text-muted mb-0" style="font-weight: 500; margin-top: 2px;">Manage fleet integration
+                        and
+                        system users</p>
+                </div>
+            </div>
+            <div class="row g-4 mt-1">
+
+                <!-- Column 1: Add Station -->
+                <div class="col-lg-4 d-flex flex-column gap-3">
+
+                    <!-- Section: Add Station -->
+                    <div class="settings-section border-0 rounded-4 p-3 p-xl-4 d-flex flex-column gap-3 shadow h-100"
+                        style="background-color: var(--bg-panel);">
+                        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-1">
+                            <div>
+                                <h4 class="settings-section-title h5 fw-bolder mb-0"
+                                    style="letter-spacing: -0.02em; color: var(--text-h);">Add New Station</h4>
+                                <p class="small mb-0" style="font-weight: 500; color: var(--text-muted);">Create a new
+                                    hub
+                                    for bicycles to be parked.</p>
+                            </div>
+                        </div>
+                        <div id="add-station-msg" class="alert py-2 px-3 small mb-0" style="display: none;"></div>
+                        <div class="d-flex flex-column gap-3 mt-auto">
+                            <div class="settings-input-group d-flex flex-column gap-2">
+                                <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                    style="font-size: 0.7rem; letter-spacing: 0.05em;">Pin Location (Drag Pin or Click
+                                    Map)</label>
+                                <div id="add-station-map"
+                                    style="height: 180px; width: 100%; border-radius: 8px; border: 1px solid var(--border); z-index: 1;">
+                                </div>
+                            </div>
+                            <div class="settings-input-group d-flex flex-column gap-2">
+                                <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                    style="font-size: 0.7rem; letter-spacing: 0.05em;">Station Name</label>
+                                <input type="text" id="new-station-name" class="form-control border-0 shadow-sm"
+                                    style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px; transition: box-shadow 0.2s;"
+                                    placeholder="Enter Station Name">
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-sm-6 settings-input-group d-flex flex-column gap-2">
+                                    <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                        style="font-size: 0.7rem; letter-spacing: 0.05em;">Latitude</label>
+                                    <input type="text" id="new-station-lat" class="form-control border-0 shadow-sm"
+                                        style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                        placeholder="14.6548">
+                                </div>
+                                <div class="col-sm-6 settings-input-group d-flex flex-column gap-2">
+                                    <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                        style="font-size: 0.7rem; letter-spacing: 0.05em;">Longitude</label>
+                                    <input type="text" id="new-station-lng" class="form-control border-0 shadow-sm"
+                                        style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                        placeholder="121.0668">
+                                </div>
+                            </div>
+                            <button id="btn-add-station" class="btn fw-bold px-4 text-nowrap mt-2"
+                                style="height: 52px; border-radius: 8px; background: linear-gradient(135deg, var(--up-maroon) 0%, #5a0c0e 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(123, 17, 19, 0.25); transition: transform 0.2s, box-shadow 0.2s;">
+                                Add Station
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Column 2: Add Bicycle -->
+                <div class="col-lg-4 d-flex flex-column gap-3">
+
+                    <!-- Section: Add Bicycle -->
+                    <div class="settings-section border-0 rounded-4 p-3 p-xl-4 d-flex flex-column gap-3 shadow h-100"
+                        style="background-color: var(--bg-panel);">
+                        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-1">
+                            <div>
+                                <h4 class="settings-section-title h5 fw-bolder mb-0"
+                                    style="letter-spacing: -0.02em; color: var(--text-h);">Add New Bicycle</h4>
+                                <p class="small mb-0" style="font-weight: 500; color: var(--text-muted);">Register a
+                                    bicycle
+                                    to an initial station.</p>
+                            </div>
+                        </div>
+                        <div id="add-bike-msg" class="alert py-2 px-3 small mb-0" style="display: none;"></div>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="row g-3">
+                                <div class="col-sm-6 settings-input-group d-flex flex-column gap-2">
+                                    <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                        style="font-size: 0.7rem; letter-spacing: 0.05em;">Bike Code</label>
+                                    <input type="text" id="new-bike-code" class="form-control border-0 shadow-sm"
+                                        style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                        placeholder="Enter Bike Code">
+                                </div>
+                                <div class="col-sm-6 settings-input-group d-flex flex-column gap-2">
+                                    <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                        style="font-size: 0.7rem; letter-spacing: 0.05em;">New Lock Code</label>
+                                    <input type="text" id="new-bike-lock" class="form-control border-0 shadow-sm"
+                                        style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                        placeholder="Enter Lock Code">
+                                </div>
+                            </div>
+                            <div class="settings-input-group d-flex flex-column gap-2 mt-2">
+                                <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                    style="font-size: 0.7rem; letter-spacing: 0.05em;">Initial Hub / Location</label>
+                                <select id="new-bike-location" class="form-select border-0 shadow-sm"
+                                    style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"></select>
+                            </div>
+                        </div>
+                        <button id="btn-add-bike" class="btn w-100 fw-bold py-2 mt-3"
+                            style="height: 52px; border-radius: 8px; background: linear-gradient(135deg, var(--up-maroon) 0%, #5a0c0e 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(123, 17, 19, 0.25);">
+                            Add to Fleet
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Column 3: User Management -->
+                <div class="col-lg-4 d-flex flex-column gap-3">
+
+                    <!-- Section: Register Member -->
+                    <div class="settings-section border-0 rounded-4 p-3 p-xl-4 d-flex flex-column gap-3 shadow h-100"
+                        style="background-color: var(--bg-panel);">
+                        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-1">
+                            <div>
+                                <h4 class="settings-section-title h5 fw-bolder mb-0"
+                                    style="letter-spacing: -0.02em; color: var(--text-h);">Register Member</h4>
+                                <p class="small mb-0" style="font-weight: 500; color: var(--text-muted);">Enroll a new
+                                    student or faculty member.</p>
+                            </div>
+                        </div>
+                        <div id="add-member-msg" class="alert py-2 px-3 small mb-0" style="display: none;"></div>
+                        <div class="d-flex flex-column gap-4">
+                            <div class="row g-3">
+                                <div class="col-sm-6 settings-input-group d-flex flex-column gap-2">
+                                    <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                        style="font-size: 0.7rem; letter-spacing: 0.05em;">First Name</label>
+                                    <input type="text" id="new-member-firstname" class="form-control border-0 shadow-sm"
+                                        style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                        placeholder="Enter First Name">
+                                </div>
+                                <div class="col-sm-6 settings-input-group d-flex flex-column gap-2">
+                                    <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                        style="font-size: 0.7rem; letter-spacing: 0.05em;">Last Name</label>
+                                    <input type="text" id="new-member-lastname" class="form-control border-0 shadow-sm"
+                                        style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                        placeholder="Enter Last Name">
+                                </div>
+                            </div>
+                            <div class="settings-input-group d-flex flex-column gap-2">
+                                <label class="form-label settings-label fw-bold text-muted text-uppercase mb-0"
+                                    style="font-size: 0.7rem; letter-spacing: 0.05em;">Phone Number</label>
+                                <input type="text" id="new-member-phone" class="form-control border-0 shadow-sm"
+                                    style="background-color: var(--bg-main); padding: 14px 16px; border-radius: 8px;"
+                                    placeholder="Enter Phone Number">
+                                <small class="text-muted mt-1" style="font-size: 0.75rem; font-weight: 500;">This number
+                                    will be used for SMS notifications and overrides.</small>
+                            </div>
+                        </div>
+                        <button id="btn-add-member" class="btn w-100 fw-bold py-2 mt-auto"
+                            style="height: 52px; border-radius: 8px; background: linear-gradient(135deg, var(--up-maroon) 0%, #5a0c0e 100%); color: white; border: none; box-shadow: 0 4px 12px rgba(123, 17, 19, 0.25);">
+                            Register Member
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS & AUTH MODAL -->
+        <div id="settings-container" class="modal-overlay"
+            style="display: flex; background: var(--bg-main); backdrop-filter: none;">
+            <div class="modal-card" id="settings-modal-card">
+                <!-- Close Button -->
+                <button class="close-btn" id="btn-close-settings" title="Close Settings">×</button>
+
+                <!-- Login View (Unified Portal) -->
+                <div id="settings-login-view" class="d-flex justify-content-center align-items-center h-100"
+                    style="min-height: 350px;">
+                    <div class="w-100" style="max-width: 400px; margin: 0 auto;">
+                        <h3 class="h4 fw-bold text-center mb-1 text-dark" style="letter-spacing: -0.02em;">UPBS Portal
+                            Login
+                        </h3>
+                        <p class="small text-muted text-center mb-4">Enter your registered mobile number to sign in.</p>
+
+                        <div id="login-error" class="alert alert-danger py-2 px-3 text-center small mb-3"
+                            style="display: none;"></div>
+
+                        <!-- Student Mobile Login -->
+                        <div id="student-login-form" class="d-flex flex-column gap-3 mb-3">
+                            <div class="settings-input-group d-flex flex-column gap-1">
+                                <label
+                                    class="form-label settings-label small fw-semibold text-muted text-uppercase mb-0">Mobile
+                                    Number</label>
+                                <input type="text" id="student-phone" class="form-control settings-input"
+                                    placeholder="Enter Phone Number">
+                            </div>
+                        </div>
+
+                        <!-- Admin Fallback Login (Hidden by default) -->
+                        <div id="admin-login-form" class="d-flex flex-column gap-3 mb-3"
+                            style="display: none !important;">
+                            <div class="settings-input-group d-flex flex-column gap-1">
+                                <label
+                                    class="form-label settings-label small fw-semibold text-muted text-uppercase mb-0">Username
+                                    / Email</label>
+                                <input type="text" id="admin-username" class="form-control settings-input"
+                                    placeholder="Enter username">
+                            </div>
+                            <div class="settings-input-group d-flex flex-column gap-1">
+                                <label
+                                    class="form-label settings-label small fw-semibold text-muted text-uppercase mb-0">Password</label>
+                                <input type="password" id="admin-password" class="form-control settings-input"
+                                    placeholder="Enter password">
+                            </div>
+                        </div>
+
+                        <button id="btn-login-submit"
+                            class="btn btn-accent w-100 fw-bold py-2 d-flex justify-content-center align-items-center gap-2 mb-3"
+                            style="height: 42px; border-radius: var(--radius-sm); transition: all 0.3s ease;">
+                            <span id="login-btn-text">Sign In</span>
+                        </button>
+
+                        <!-- Toggle Link -->
+                        <div class="text-center">
+                            <a href="#" id="toggle-login-mode" class="small text-muted"
+                                style="text-decoration: underline;">Admin Credentials Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin View -->
+                <div id="settings-admin-view" style="display: none; height: 100%;">
+                    <div class="d-flex h-100" style="min-height: 520px;">
+                        <!-- Left Sidebar Tabs -->
+                        <div class="admin-sidebar border-end pe-3 d-flex flex-column gap-2"
+                            style="width: 220px; flex-shrink: 0;">
+                            <h4 class="h5 fw-bold text-dark mb-3 px-2 mt-1" style="letter-spacing: -0.02em;">Admin
+                                Settings
+                            </h4>
+
+                            <button
+                                class="btn admin-tab-btn active d-flex align-items-center gap-2 text-start w-100 py-2.5 px-3 border-0"
+                                data-target="tab-stations"
+                                style="background: none; font-size: 0.85rem; font-weight: 600;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                Stations Control
+                            </button>
+
+                            <button
+                                class="btn admin-tab-btn d-flex align-items-center gap-2 text-start w-100 py-2.5 px-3 border-0"
+                                data-target="tab-bikes" style="background: none; font-size: 0.85rem; font-weight: 600;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                    <path d="M12 18h.01"></path>
+                                </svg>
+                                Bicycle Fleet
+                            </button>
+
+                            <button
+                                class="btn admin-tab-btn d-flex align-items-center gap-2 text-start w-100 py-2.5 px-3 border-0"
+                                data-target="tab-members"
+                                style="background: none; font-size: 0.85rem; font-weight: 600;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                Registered Members
+                            </button>
+
+                            <button
+                                class="btn admin-tab-btn d-flex align-items-center gap-2 text-start w-100 py-2.5 px-3 border-0"
+                                data-target="tab-admin-alerts"
+                                style="background: none; font-size: 0.85rem; font-weight: 600;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                    </path>
+                                </svg>
+                                Admin Alert Contacts
+                            </button>
+                        </div>
+
+                        <!-- Right Content Area -->
+                        <div class="admin-content-pane flex-grow-1 ps-4 pe-5 overflow-hidden d-flex flex-column"
+                            style="height: 520px;">
+
+                            <!-- Tab 1: Stations Control -->
+                            <div id="tab-stations" class="admin-tab-content d-flex flex-column h-100 gap-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <h5 class="fw-bold text-dark mb-0">Station Status Control</h5>
+                                    <span class="text-muted small">Toggle station active/disabled status</span>
+                                </div>
+                                <div id="station-toggle-list"
+                                    class="custom-scroll d-flex flex-column gap-2 overflow-auto flex-grow-1"
+                                    style="padding-right: 8px;">
+                                    <!-- Dynamically populated -->
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Bicycle Fleet -->
+                            <div id="tab-bikes" class="admin-tab-content d-none d-flex flex-column h-100 gap-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <h5 class="fw-bold text-dark mb-0">Bicycle Modification</h5>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button id="btn-save-all-bikes"
+                                            class="btn btn-sm btn-success fw-bold px-3 border-0 shadow-sm text-nowrap"
+                                            style="background-color: var(--up-green); height: 31px; font-size: 0.75rem;">Save
+                                            All Edits</button>
+                                        <div class="input-group input-group-sm shadow-sm"
+                                            style="width: 220px; margin-bottom: 0;">
+                                            <input type="text" id="search-bike-override" class="form-control border-0"
+                                                placeholder="Enter Bike Code" style="font-size: 0.75rem;">
+                                            <button class="btn btn-primary fw-bold px-3 border-0"
+                                                id="btn-search-bike-override"
+                                                style="background-color: var(--up-maroon); font-size: 0.75rem;">Go</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="bike-override-list"
+                                    class="custom-scroll d-flex flex-column gap-3 overflow-auto flex-grow-1"
+                                    style="padding-right: 8px;">
+                                    <!-- Dynamically populated -->
+                                </div>
+                            </div>
+
+                            <!-- Tab 3: Registered Members -->
+                            <div id="tab-members" class="admin-tab-content d-none d-flex flex-column h-100 gap-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <h5 class="fw-bold text-dark mb-0">Registered Members</h5>
+                                    <div class="input-group input-group-sm shadow-sm"
+                                        style="width: 220px; margin-bottom: 0;">
+                                        <input type="text" id="search-member-override" class="form-control border-0"
+                                            placeholder="Enter Name or Phone" style="font-size: 0.50rem;">
+                                        <button class="btn btn-primary fw-bold px-3 border-0"
+                                            id="btn-search-member-override"
+                                            style="background-color: var(--up-maroon); font-size: 0.75rem;">Go</button>
+                                    </div>
+                                </div>
+                                <div id="members-list"
+                                    class="custom-scroll d-flex flex-column gap-3 overflow-auto flex-grow-1"
+                                    style="padding-right: 8px;">
+                                    <!-- Dynamically populated -->
+                                </div>
+                            </div>
+
+                            <!-- Tab 4: Admin Alert Contacts -->
+                            <div id="tab-admin-alerts" class="admin-tab-content d-none d-flex flex-column h-100 gap-3">
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                                    <h5 class="fw-bold text-dark mb-0">Admin SMS Alert Contacts</h5>
+                                    <span class="text-muted small">Configure contacts for real-time alerts</span>
+                                </div>
+                                <div class="custom-scroll d-flex flex-column gap-3 overflow-auto flex-grow-1"
+                                    style="padding-right: 8px;">
+                                    <p class="small text-muted mb-0">Select which administrators receive real-time SMS
+                                        notifications for dispute flags and appeal uploads.</p>
+
+                                    <div class="card p-3 border rounded shadow-sm mb-3"
+                                        style="background-color: var(--bg-panel); border-color: var(--border) !important;">
+                                        <div class="d-flex flex-column gap-4">
+
+                                            <!-- Admin 1 -->
+                                            <div id="admin-container-1"
+                                                class="d-flex align-items-center justify-content-between border-bottom pb-3"
+                                                style="border-color: var(--border) !important;">
+                                                <div>
+                                                    <div class="fw-bold text-muted"
+                                                        style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                        Primary Admin (Admin 1)</div>
+                                                    <div id="admin-display-name-1" class="fw-bold text-dark mt-1"
+                                                        style="font-size: 0.95rem;">Not Configured</div>
+                                                    <div id="admin-display-phone-1"
+                                                        class="small text-muted font-monospace mt-0.5">-</div>
+                                                </div>
+                                                <button id="btn-edit-admin-1"
+                                                    class="btn btn-sm btn-outline-primary fw-bold"
+                                                    onclick="window.startAdminEdit(1)"
+                                                    style="border-radius: 6px; font-size: 0.75rem; border-color: var(--up-maroon) !important; color: var(--up-maroon) !important;">Edit
+                                                    Admin</button>
+                                            </div>
+
+                                            <!-- Admin 2 -->
+                                            <div id="admin-container-2"
+                                                class="d-flex align-items-center justify-content-between pb-1">
+                                                <div>
+                                                    <div class="fw-bold text-muted"
+                                                        style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                        Secondary Admin (Admin 2)</div>
+                                                    <div id="admin-display-name-2" class="fw-bold text-dark mt-1"
+                                                        style="font-size: 0.95rem;">Not Configured</div>
+                                                    <div id="admin-display-phone-2"
+                                                        class="small text-muted font-monospace mt-0.5">-</div>
+                                                </div>
+                                                <button id="btn-edit-admin-2"
+                                                    class="btn btn-sm btn-outline-primary fw-bold"
+                                                    onclick="window.startAdminEdit(2)"
+                                                    style="border-radius: 6px; font-size: 0.75rem; border-color: var(--up-maroon) !important; color: var(--up-maroon) !important;">Edit
+                                                    Admin</button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <span id="admin-alerts-save-msg" class="small text-success fw-semibold text-center"
+                                        style="display: none; font-size: 0.75rem;">Saved successfully!</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORT LOGS CONTAINER -->
+        <div id="logs-container" class="data-container container-fluid px-4 py-3"
+            style="display: none; height: calc(100vh - 3rem); box-sizing: border-box; overflow: hidden; flex-direction: column; padding-bottom: 2rem !important;">
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom flex-shrink-0">
+                <div
+                    style="width: 5px; height: 32px; background-color: var(--up-maroon); border-radius: 4px; margin-right: 12px;">
+                </div>
+                <div>
+                    <h3 class="h4 fw-bolder mb-0"
+                        style="color: var(--up-maroon); letter-spacing: -0.03em; text-transform: uppercase;">System
+                        Reports
+                    </h3>
+                    <p class="small text-muted mb-0" style="font-weight: 500; margin-top: 2px;">View maintenance and
+                        user
+                        dispute logs</p>
+                </div>
+            </div>
+            <div class="row g-4 flex-grow-1 overflow-hidden"
+                style="min-height: 0; margin-bottom: 0; padding-bottom: 1.5rem;">
+                <!-- Left Column: Maintenance Queue -->
+                <div class="col-md-6 d-flex flex-column h-100 overflow-hidden">
+                    <div class="settings-section border-0 rounded-4 p-3 p-xl-4 d-flex flex-column gap-3 shadow h-100 overflow-hidden"
+                        style="background-color: var(--bg-panel); min-height: 0;">
+                        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-1 flex-shrink-0">
+                            <div>
+                                <h4 class="settings-section-title h5 fw-bolder mb-0"
+                                    style="letter-spacing: -0.02em; color: var(--text-h);">Maintenance Queue</h4>
+                                <p class="small mb-0" style="font-weight: 500; color: var(--text-muted);">Bikes reported
+                                    as
+                                    broken and needing repair.</p>
+                            </div>
+                        </div>
+                        <div id="maintenance-queue-list"
+                            class="custom-scroll d-flex flex-column gap-2 overflow-auto flex-grow-1"
+                            style="padding-right: 5px;">
+                            <!-- We will populate this with real database records in Step 5 -->
+                            <div class="text-center small text-muted mt-4">Loading queue...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Honesty Logs -->
+                <div class="col-md-6 d-flex flex-column h-100 overflow-hidden">
+                    <div class="settings-section border-0 rounded-4 p-3 p-xl-4 d-flex flex-column gap-3 shadow h-100 overflow-hidden"
+                        style="background-color: var(--bg-panel); min-height: 0;">
+                        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-1 flex-shrink-0">
+                            <div>
+                                <h4 class="settings-section-title h5 fw-bolder mb-0"
+                                    style="letter-spacing: -0.02em; color: var(--text-h);">Honesty & Dispute Logs</h4>
+                                <p class="small mb-0" style="font-weight: 500; color: var(--text-muted);">Recent trust
+                                    point
+                                    deductions and dispute history.</p>
+                            </div>
+                        </div>
+                        <div id="honesty-logs-list"
+                            class="custom-scroll d-flex flex-column gap-2 overflow-auto flex-grow-1"
+                            style="padding-right: 5px;">
+                            <!-- We will populate this with real database records in Step 5 -->
+                            <div class="text-center small text-muted mt-4">Loading logs...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Our Scripts -->
+    <script src="/js/theme.js?v=121"></script>
+    <script src="/js/map.js?v=118"></script>
+    <script src="/js/bike.js?v=118"></script>
+    <script src="/js/history.js?v=118"></script>
+    <script src="/js/sms.js?v=118"></script>
+    <script src="/js/settings.js?v=118"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/analytics.js?v=118"></script>
+    <script src="js/admin-search.js?v=118"></script>
+
+    <!-- CONFIRMATION MODALS -->
+    <style>
+        #btn-logout-cancel,
+        #btn-logout-confirm,
+        #btn-action-cancel,
+        #btn-action-confirm {
+            transition: all 0.2s ease;
+        }
+
+        #btn-logout-cancel:hover,
+        #btn-action-cancel:hover {
+            background-color: var(--border) !important;
+        }
+
+        #btn-logout-confirm:hover,
+        #btn-action-confirm:hover {
+            background-color: #5a0c0e !important;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(123, 17, 19, 0.25);
+        }
+    </style>
+    <!-- Logout Modal -->
+    <div id="logout-confirm-modal" class="modal-overlay"
+        style="display: none; background: rgba(11, 15, 25, 0.6); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-card"
+            style="max-width: 380px; padding: 2rem; background-color: var(--bg-panel); border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h4 class="fw-bold mb-3 text-center" style="color: var(--text-h); letter-spacing: -0.02em;">Confirm Logout
+            </h4>
+            <p class="text-center small mb-4" style="color: var(--text-muted);">Are you sure you want to end your
+                administrative session?</p>
+            <div class="d-flex gap-3">
+                <button id="btn-logout-cancel" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background-color: var(--bg-main); color: var(--text-h); border: 1px solid var(--border);">Cancel</button>
+                <button id="btn-logout-confirm" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background: var(--up-maroon); color: white; border: none;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Action Modal -->
+    <div id="action-confirm-modal" class="modal-overlay"
+        style="display: none; background: rgba(11, 15, 25, 0.6); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-card"
+            style="max-width: 380px; padding: 2rem; background-color: var(--bg-panel); border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h4 id="action-confirm-title" class="fw-bold mb-3 text-center"
+                style="color: var(--text-h); letter-spacing: -0.02em;">Confirm Action</h4>
+            <p id="action-confirm-text" class="text-center small mb-4" style="color: var(--text-muted);">Are you sure
+                you want to proceed?</p>
+            <div class="d-flex gap-3">
+                <button id="btn-action-cancel" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background-color: var(--bg-main); color: var(--text-h); border: 1px solid var(--border);">Cancel</button>
+                <button id="btn-action-confirm" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background: var(--up-maroon); color: white; border: none;">Confirm</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Points Modal -->
+    <div id="add-points-modal" class="modal-overlay"
+        style="display: none; background: rgba(11, 15, 25, 0.6); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-card"
+            style="width: 100%; max-width: 400px; padding: 2rem; background-color: var(--bg-panel); border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h4 class="fw-bold mb-2 text-center" style="color: var(--text-h); letter-spacing: -0.02em;">Adjust Trust
+                Points</h4>
+            <p id="add-points-text" class="text-center small mb-4" style="color: var(--text-muted);">Enter points to add
+                to the member.</p>
+            <div class="mb-4">
+                <input type="number" id="input-add-points" class="form-control text-center fw-bold fs-5"
+                    placeholder="e.g. 20 or -5"
+                    style="border-radius: 8px; border: 2px solid var(--border); background-color: var(--bg-main); color: var(--text-h); height: 50px;">
+            </div>
+            <div class="d-flex gap-3">
+                <button id="btn-points-cancel" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background-color: var(--bg-main); color: var(--text-h); border: 1px solid var(--border);">Cancel</button>
+                <button id="btn-points-confirm" class="btn w-50 fw-bold"
+                    style="border-radius: 8px; background: #16a34a; color: white; border: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); transition: all 0.2s ease;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => {
+                        console.log('Service Worker registered successfully!', reg);
+                        reg.onupdatefound = () => {
+                            const installingWorker = reg.installing;
+                            installingWorker.onstatechange = () => {
+                                if (installingWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        console.log('New service worker update found! Reloading...');
+                                        window.location.reload();
+                                    }
+                                }
+                            };
+                        };
+                    })
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+
+            // Handle controller changes (new active worker)
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

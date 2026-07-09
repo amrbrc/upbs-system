@@ -1,0 +1,17 @@
+[Unit]
+Description=Bikeshare Worker API Service
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /home/stph/bikeshareAPI_2/worker-api/server.js
+WorkingDirectory=/home/stph/bikeshareAPI_2/worker-api
+Restart=always
+User=stph
+SyslogIdentifier=bikeshare-worker
+StandardInput=null
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
