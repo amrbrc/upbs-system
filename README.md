@@ -6,6 +6,18 @@ The system allows registered users to search for available bicycles, query locat
 
 ---
 
+## Table of Contents
+- [Key Features](#key-features)
+- [Directory Structure](#directory-structure)
+- [System Architecture](#system-architecture)
+- [REST API Reference](#rest-api-reference)
+- [Tech Stack](#tech-stack)
+- [Deployment Guide & Environment Setup](#deployment-guide--environment-setup)
+  - [Scenario A: Single Local Hardware Deployment](#scenario-a-single-local-hardware-deployment-all-in-one)
+  - [Scenario B: Hybrid Cloud/Hardware Deployment](#scenario-b-hybrid-cloudhardware-deployment-separated-box)
+
+---
+
 ## Key Features
 
 - **Decoupled Microservices**: Separates low-level SMS hardware polling from resource-heavy business logic, preventing modem freeze issues.
