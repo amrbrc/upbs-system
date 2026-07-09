@@ -37,54 +37,35 @@ upbs/
 └── package.json          # Root scripts for multi-project orchestration
 ```
 
----
-
 ## System Architecture
 
-The platform is structured as a decoupled microservices system to ensure high availability and prevent hardware lockups during heavy database operations.
+The platform uses a decoupled microservices model to ensure high availability and prevent hardware lockups during heavy database operations.
 
 ```mermaid
-flowchart LR
-    subgraph Gateway ["Gateway Server (Port 3000)"]
-        A["1. Hardware Reception<br>(Modem/Gammu)"] --> B["2. Polling & Parsing<br>(200ms DB Loop)"]
-        E["5. Hardware Injection<br>(SMS Reply)"]
+flowchart TD
+    User([User Phone]) <-->|SMS| Modem[GSM Modem]
+    
+    subgraph Local ["On-Premise Hardware Box"]
+        Modem <-->|Read / Inject| Gammu[Gammu SMSD]
+        Gammu <-->|Read/Write| smsd_db[(Local DB: smsd)]
+        smsd_db <-->|Poll / Processed| Gateway[Gateway Server]
     end
     
-    subgraph Worker ["Worker API (Port 3001)"]
-        D["4. Business Logic<br>(DB & Membership Check)"]
+    subgraph Core ["Core Server (Cloud or Local Box)"]
+        Gateway <-->|HTTP POST / Outbound Poll| Worker[Worker API]
+        Worker <-->|Read/Write| upbs_db[(Core DB: upbs)]
+        Worker <-->|Static Files| Dashboard[Web Dashboard]
     end
 
-    B -->|3. Axios HTTP POST| D
-    D -->|JSON Response| E
-
-    style Gateway fill:#f4f7fa,stroke:#2b579a,stroke-width:2px;
-    style Worker fill:#fffaf4,stroke:#e06666,stroke-width:2px;
+    style Local fill:#f4f7fa,stroke:#2b579a,stroke-width:2px;
+    style Core fill:#fffaf4,stroke:#e06666,stroke-width:2px;
 ```
 
 1. **User Sends SMS**: A user texts a command (e.g. `search all` or `b1eee to vinzons`) to the system's phone number.
 2. **Modem Reception**: A physical GSM modem receives the text, and `gammu-smsd` stores it in the local `smsd.inbox` table.
 3. **Gateway Polling**: The **Gateway Server** polls the inbox table, parses the command patterns, and forwards them to the **Worker API**.
-4. **Business Logic**: The **Worker API** processes database transactions (updates coordinate logs, audits memberships, logs operations) and returns the reply.
+4. **Business Logic**: The **Worker API** processes database transactions in the core `upbs` database (updates coordinate logs, audits memberships, logs operations) and returns the reply.
 5. **Reply Dispatched**: The Gateway Server injects the reply back to the modem using `gammu-smsd-inject` for immediate dispatch back to the user.
-
----
-
-## SMS Command Reference
-
-Below is the dictionary of text commands students can send via SMS:
-
-| SMS Command Example | Pattern / Action | Worker API Target | Description |
-| :--- | :--- | :--- | :--- |
-| `search all` | `search all` | `POST /api/search-all` | Checks availability of all bicycles across hubs. |
-| `search b1` | `search <bicycle_code>` | `POST /api/search` | Checks the status and current location of a specific bike. |
-| `1 eee to vinzons` | `<bicycle_code> <from> to <to>` | `POST /api/borrow` | Initiates a bicycle borrow transaction. |
-| `locations` | `locations` | `POST /api/locations` | Lists all active hubs and the count of bikes at each. |
-| `usage b1` | `usage <bicycle_code>` | `POST /api/usage` | Retrieves recent transaction logs for a bike. |
-| `bikeshare help` | `bikeshare help` | `POST /api/help` | Returns a list of available command instructions. |
-| `how` | `how` | `POST /api/how` | Returns guidelines on how the bike share system works. |
-| `done b1` | `done <bicycle_code>` | `POST /api/done` | Concludes active trip, prompting for condition checks. |
-| `good b1` | `good <bicycle_code>` | `POST /api/good` | Confirms the returned bike is in good condition. |
-| `broken b1` | `broken <bicycle_code>` | `POST /api/broken` | Reports the returned bike as broken/damaged. |
 
 ---
 
