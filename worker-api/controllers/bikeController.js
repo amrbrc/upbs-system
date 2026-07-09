@@ -304,7 +304,7 @@ const usage = async (req, res) => {
                 const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
                 const timeStr = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                 const line = `${i + 1}. ${record.previous_location.toLowerCase()}->${record.new_location.toLowerCase()} (${dateStr} ${timeStr})\n`;
-                
+
                 // Ensure adding this trip won't exceed standard 160 SMS limit to prevent multi-part out-of-order texts
                 if ((replyMsg + line).length > 160 && i > 0) {
                     break;
@@ -407,7 +407,7 @@ const borrow = async (req, res) => {
             if (activeTrip.done_text_received === 1) {
                 return res.json({ reply: `You have a pending return confirmation for Bike ${activeTrip.bicycle_code}. Please reply 'GOOD ${activeTrip.bicycle_code}' or 'BROKEN ${activeTrip.bicycle_code}' first before checking out another bike.` });
             } else {
-                return res.json({ reply: "You already have an active bike checked out. Please return it and text 'done' before borrowing another." });
+                return res.json({ reply: `You already have an active bike checked out (Bike ${activeTrip.bicycle_code}). Please return it and text 'DONE ${activeTrip.bicycle_code}' before borrowing another.` });
             }
         }
 

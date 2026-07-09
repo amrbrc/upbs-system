@@ -798,6 +798,8 @@ const activateMember = async (req, res) => {
             return res.status(404).json({ success: false, error: 'Member not found' });
         }
 
+        await sendSMS(phone_number, "Welcome back to UP Bike Share! Your account has been reactivated.");
+
         return res.json({ success: true, message: 'Member successfully reactivated!' });
     } catch (err) {
         console.error('Error in activateMember controller:', err);
