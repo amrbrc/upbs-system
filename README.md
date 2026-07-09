@@ -100,6 +100,199 @@ Below is a quick dictionary of the text commands a student can send via SMS and 
 
 ---
 
+## 5. REST API Documentation
+
+The **Worker API** hosts a set of REST endpoints for the dashboard frontend, the SMS gateway polling loop, and administrator controls.
+
+### Authentication & Security
+The API enforces two types of security layers:
+1. **JWT User Bearer Authentication**: Accessed by setting the `Authorization: Bearer <JWT_TOKEN>` header. Used by the Student and Admin dashboards.
+2. **Gateway HMAC Secret Token**: Accessed by setting the `x-gateway-secret: <GATEWAY_SECRET>` header. Used to secure internal communications between the gateway-server and worker-api.
+
+---
+
+### Authentication Endpoints
+
+#### `POST /api/auth/login`
+- **Description**: Authenticate a registered student using their mobile number.
+- **Payload**:
+  ```json
+  {
+    "phone_number": "+639171234567"
+  }
+  ```
+- **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "token": "JWT_TOKEN_HERE",
+    "role": "student",
+    "user": {
+      "firstname": "John",
+      "lastname": "Doe",
+      "phone_number": "+639171234567",
+      "role": "student",
+      "trust_points": 100
+    }
+  }
+  ```
+
+#### `POST /api/admin/login`
+- **Description**: Authenticate administrators using username and password.
+- **Payload**:
+  ```json
+  {
+    "username": "admin",
+    "password": "yourpassword"
+  }
+  ```
+- **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "token": "JWT_TOKEN_HERE"
+  }
+  ```
+
+---
+
+### Student Panel Endpoints (Requires JWT Auth)
+
+#### `GET /api/student/dashboard`
+- **Description**: Fetch all metrics for the active student dashboard, including trust points, frozen status, current active borrow details, recent trip history, last SMS command processed, and the global Wall of Honor feeds.
+
+#### `GET /api/student/leaderboards`
+- **Description**: Fetch the leaderboard standings, automatically performing bi-weekly point reset schedules. Returns rankings for Top Trusted Riders, Top Active Riders, and Most Visited Hubs.
+
+---
+
+### Public Map & Directory Endpoints
+
+#### `GET /api/bicycles`
+- **Description**: Returns a list of all active bicycles, including their current location hub, previous location, condition status, and disable status.
+
+#### `GET /api/locations`
+- **Description**: Returns all station hubs with their coordinates (latitude, longitude) and operational statuses.
+
+#### `GET /api/history/:bicycleCode`
+- **Description**: Fetch the recent borrowing history logs for a specific bicycle.
+
+#### `GET /api/analytics`
+- **Description**: Retrieve usage stats (total trips, active users, bike utilization percentages, and charts timelines).
+
+---
+
+### SMS Gateway Polling Endpoints (Requires Gateway Token)
+
+#### `POST /api/members/check`
+- **Description**: Verify if the sender phone number exists as a registered active member.
+- **Payload**:
+  ```json
+  {
+    "phone_number": "+639171234567",
+    "message_text": "search all"
+  }
+  ```
+
+#### `GET /api/gateway/outbound`
+- **Description**: Poll the API for any pending outbound SMS records queued to be dispatched by the physical modem.
+- **Response (200 OK)**:
+  ```json
+  {
+    "smsList": [
+      {
+        "id": 42,
+        "phone_number": "+639171234567",
+        "message": "Reminder: Lock Bike b1 and reply 'done'."
+      }
+    ]
+  }
+  ```
+
+#### `POST /api/gateway/outbound/:id/sent`
+- **Description**: Callback to mark a pending outbound SMS record as successfully sent via hardware.
+
+---
+
+### Admin Settings & Panel Management (Requires Admin JWT Auth)
+
+#### `GET /api/admin/settings`
+- **Description**: Fetch all system-wide de-hardcoded point multipliers, grace periods, timeouts, and admin alert settings.
+
+#### `POST /api/admin/settings`
+- **Description**: Update system-wide configuration settings.
+
+#### `GET /api/admin/members`
+- **Description**: Retrieve all registered users.
+
+#### `POST /api/admin/members`
+- **Description**: Add a new member or re-activate a soft-deleted one.
+- **Payload**:
+  ```json
+  {
+    "firstname": "Jane",
+    "lastname": "Smith",
+    "phone_number": "+639177654321"
+  }
+  ```
+
+#### `POST /api/admin/bicycles`
+- **Description**: Add a new bicycle code to the network.
+- **Payload**:
+  ```json
+  {
+    "bicycle_code": "b6",
+    "combination_lock": "1357",
+    "initial_location": "eee"
+  }
+  ```
+
+#### `POST /api/admin/locations`
+- **Description**: Add a new station hub location.
+- **Payload**:
+  ```json
+  {
+    "location_name": "quadrangle",
+    "latitude": 14.6545,
+    "longitude": 121.0711
+  }
+  ```
+
+#### `POST /api/admin/resolve-dispute`
+- **Description**: Resolve a pending dispute between two users on a damaged/missing bike.
+- **Payload**:
+  ```json
+  {
+    "phone_number": "+639171234567",
+    "verdict": "guilty",
+    "bicycle_code": "b1",
+    "waive_penalty": false
+  }
+  ```
+  *(Verdicts: `"guilty"`, `"innocent"`, `"neutral"`. Waiving penalty points is supported).*
+
+#### `POST /api/admin/override-points`
+- **Description**: Manually override a user's trust points.
+- **Payload**:
+  ```json
+  {
+    "phone_number": "+639171234567",
+    "trust_points": 105
+  }
+  ```
+
+#### `POST /api/admin/bicycles/toggle`
+- **Description**: Lock/disable a bicycle from being checked out or unlock/enable it.
+- **Payload**:
+  ```json
+  {
+    "bicycle_code": "b1",
+    "is_disabled": 1
+  }
+  ```
+
+---
+
 ## Tech Stack
 - **Runtime**: Node.js
 - **Framework**: Express.js
