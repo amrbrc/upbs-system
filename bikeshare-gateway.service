@@ -5,8 +5,8 @@ Wants=bikeshare-worker.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/node /home/stph/bikeshareAPI_2/gateway-server/server.js
-WorkingDirectory=/home/stph/bikeshareAPI_2/gateway-server
+ExecStart=/usr/bin/node /home/stph/upbs-project/gateway-server/server.js
+WorkingDirectory=/home/stph/upbs-project/gateway-server
 Restart=always
 User=stph
 SyslogIdentifier=bikeshare-gateway

@@ -34,8 +34,8 @@ async function runMigrations() {
     try {
         await upbsPool.query("ALTER TABLE members ADD COLUMN leaderboard_points INT DEFAULT 100");
         console.log("[DB] Added leaderboard_points column to members.");
-    } catch(e) {
-        if(e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error:", e.message);
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error:", e.message);
     }
     try {
         await upbsPool.query("ALTER TABLE members ALTER leaderboard_points SET DEFAULT 100");
@@ -54,7 +54,7 @@ async function runMigrations() {
         `);
         const lastReset = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
         await upbsPool.query("INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES ('leaderboard_last_reset', ?)", [lastReset]);
-    } catch(e) {
+    } catch (e) {
         console.error("[DB] Migration error settings:", e.message);
     }
     try {
@@ -69,7 +69,7 @@ async function runMigrations() {
             )
         `);
         console.log("[DB] Ensured outbound_sms queue table exists.");
-    } catch(e) {
+    } catch (e) {
         console.error("[DB] Migration error outbound_sms:", e.message);
     }
     try {
@@ -82,7 +82,7 @@ async function runMigrations() {
             )
         `);
         console.log("[DB] Ensured user_sms_inbox table exists.");
-    } catch(e) {
+    } catch (e) {
         console.error("[DB] Migration error user_sms_inbox:", e.message);
     }
     try {
@@ -96,7 +96,7 @@ async function runMigrations() {
             ('admin_alert_phone_2', '', 'Phone number of Secondary Admin contact for SMS notifications.')
         `);
         console.log("[DB] Ensured reward_delivered_bike and admin alert settings exist.");
-    } catch(e) {
+    } catch (e) {
         console.error("[DB] Migration error reward_delivered_bike or admin alert settings:", e.message);
     }
     const colsToEnsure = [
@@ -106,13 +106,13 @@ async function runMigrations() {
         "ALTER TABLE bicycle_codes ADD COLUMN penalty_applied INT DEFAULT 0"
     ];
     for (const q of colsToEnsure) {
-        try { await upbsPool.query(q); } catch(e) { if(e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error:", e.message); }
+        try { await upbsPool.query(q); } catch (e) { if (e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error:", e.message); }
     }
     try {
         await upbsPool.query("ALTER TABLE bicycle_history ADD COLUMN dispute_image_url VARCHAR(512) DEFAULT NULL");
         console.log("[DB] Added dispute_image_url column to bicycle_history.");
-    } catch(e) {
-        if(e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error dispute_image_url (bicycle_history):", e.message);
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error("[DB] Migration error dispute_image_url (bicycle_history):", e.message);
     }
     try {
         await upbsPool.query(`
@@ -124,7 +124,7 @@ async function runMigrations() {
             )
         `);
         console.log("[DB] Ensured fb_bot_sessions table exists.");
-    } catch(e) {
+    } catch (e) {
         console.error("[DB] Migration error fb_bot_sessions table:", e.message);
     }
     try {
@@ -132,7 +132,7 @@ async function runMigrations() {
         const [rows] = await upbsPool.query("SELECT setting_value FROM app_settings WHERE setting_key = 'utc_to_pst_shifted_v3'");
         if (rows.length === 0) {
             console.log("[DB] Shifting historical UTC datetimes to PST (+08:00)...");
-            
+
             // 1. Shift bicycle_history
             await upbsPool.query(`
                 UPDATE bicycle_history 
@@ -141,14 +141,14 @@ async function runMigrations() {
                     last_penalty_time = CASE WHEN last_penalty_time IS NOT NULL THEN DATE_ADD(last_penalty_time, INTERVAL 8 HOUR) ELSE NULL END
                 WHERE borrowed_at < '2026-07-03 10:00:00'
             `);
-            
+
             // 2. Shift bicycle_codes
             await upbsPool.query(`
                 UPDATE bicycle_codes 
                 SET broken_reported_at = DATE_ADD(broken_reported_at, INTERVAL 8 HOUR)
                 WHERE broken_reported_at < '2026-07-03 10:00:00'
             `);
-            
+
             // 3. Shift Logs
             await upbsPool.query(`
                 UPDATE Logs 

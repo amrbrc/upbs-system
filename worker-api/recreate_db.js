@@ -355,7 +355,7 @@ async function main() {
                 Version int(11) NOT NULL DEFAULT '0' PRIMARY KEY
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         `);
-        
+
         await connection.query('INSERT INTO gammu (Version) VALUES (16);');
 
         console.log('[DB Setup] "smsd" tables created successfully.');
