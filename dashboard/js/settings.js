@@ -661,51 +661,129 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     let actionHtml = '';
                     if (b.condition_status === 'Pending_Delivery') {
+                        const buttonsBlock = `
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Verify Volunteer Delivery:</div>
+                            <div class="d-flex gap-2" style="max-width: 200px;">
+                                <button class="btn btn-sm btn-success flex-fill btn-resolve-delivery" data-verdict="approve" data-bike="${b.bicycle_code}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Approve</button>
+                                <button class="btn btn-sm btn-danger flex-fill btn-resolve-delivery" data-verdict="reject" data-bike="${b.bicycle_code}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Reject</button>
+                            </div>
+                            <label class="d-flex align-items-center gap-2 mt-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;">
+                                <input type="checkbox" class="waive-penalty-checkbox-delivery" data-bike="${b.bicycle_code}">
+                                Waive false report penalty on reject
+                            </label>
+                        `;
+
                         if (b.dispute_image_url) {
                             actionHtml = `
                                 <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Verify Volunteer Delivery:</div>
-                                    <div class="d-flex gap-2" style="max-width: 200px;">
-                                        <button class="btn btn-sm btn-success flex-fill btn-resolve-delivery" data-verdict="approve" data-bike="${b.bicycle_code}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Approve</button>
-                                        <button class="btn btn-sm btn-danger flex-fill btn-resolve-delivery" data-verdict="reject" data-bike="${b.bicycle_code}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Reject</button>
-                                    </div>
+                                    ${buttonsBlock}
                                 </div>
                             `;
                         } else {
                             actionHtml = `
                                 <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
-                                    <div class="badge bg-secondary" style="font-size: 0.7rem; font-weight: 600; padding: 6px 10px;">🕒 Delivery photo proof pending from volunteer</div>
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                        <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Photo not yet uploaded</span>
+                                        <label class="d-flex align-items-center gap-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                            <input type="checkbox" onchange="const el = this.closest('.maintenance-card').querySelector('.mq-hidden-actions'); if(el) el.style.display = this.checked ? 'block' : 'none';">
+                                            Verify Without Photo
+                                        </label>
+                                    </div>
+                                    <div class="mq-hidden-actions mt-2 pt-2 border-top" style="display: none; border-top: 1px dashed var(--border) !important;">
+                                        ${buttonsBlock}
+                                    </div>
                                 </div>
                             `;
                         }
-                    } else if (b.dispute_image_url) {
-                        if (b.condition_status === 'Missing') {
+                    } else if (b.condition_status === 'Missing') {
+                        if (b.dispute_reported_by) {
+                            const targetPhone = b.last_user_phone || b.reporter_phone || '';
+                            const buttonsBlock = `
+                                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Resolve Missing Report:</div>
+                                <div class="d-flex gap-2" style="max-width: 260px;">
+                                    <button class="btn btn-sm btn-success flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="innocent" data-bike="${b.bicycle_code}" data-phone="${targetPhone}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Innocent</button>
+                                    <button class="btn btn-sm btn-danger flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="guilty" data-bike="${b.bicycle_code}" data-phone="${targetPhone}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Guilty</button>
+                                    <button class="btn btn-sm btn-secondary flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="neutral" data-bike="${b.bicycle_code}" data-phone="${targetPhone}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Neutral</button>
+                                </div>
+                                <label class="d-flex align-items-center gap-2 mt-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;">
+                                    <input type="checkbox" class="waive-penalty-checkbox-mq" data-bike="${b.bicycle_code}">
+                                    Waive standard point penalty
+                                </label>
+                            `;
+
+                            if (b.dispute_image_url) {
+                                actionHtml = `
+                                    <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
+                                        ${buttonsBlock}
+                                    </div>
+                                `;
+                            } else {
+                                actionHtml = `
+                                    <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                            <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Photo not yet uploaded</span>
+                                            <label class="d-flex align-items-center gap-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                                <input type="checkbox" onchange="const el = this.closest('.maintenance-card').querySelector('.mq-hidden-actions'); if(el) el.style.display = this.checked ? 'block' : 'none';">
+                                                Settle Without Photo
+                                            </label>
+                                        </div>
+                                        <div class="mq-hidden-actions mt-2 pt-2 border-top" style="display: none; border-top: 1px dashed var(--border) !important;">
+                                            ${buttonsBlock}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        } else {
                             actionHtml = `
                                 <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Resolve Missing Report:</div>
-                                    <div class="d-flex gap-2" style="max-width: 180px;">
-                                        <button class="btn btn-sm btn-success flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="guilty" data-bike="${b.bicycle_code}" data-phone="${b.last_user_phone || ''}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Approve</button>
-                                        <button class="btn btn-sm btn-danger flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="innocent" data-bike="${b.bicycle_code}" data-phone="${b.last_user_phone || ''}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Reject</button>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">
+                                        Missing (Resolved / Awaiting Recovery)
                                     </div>
-                                    <label class="d-flex align-items-center gap-2 mt-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;">
-                                        <input type="checkbox" class="waive-penalty-checkbox-mq" data-bike="${b.bicycle_code}">
-                                        Waive standard point penalty
-                                    </label>
+                                </div>
+                            `;
+                        }
+                    } else if (!b.dispute_reported_by) {
+                        actionHtml = `
+                            <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">
+                                    Awaiting Repair
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        const targetPhone = b.last_user_phone || b.reporter_phone || '';
+                        const buttonsBlock = `
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Resolve Dispute / Settle Report:</div>
+                            <div class="d-flex gap-2" style="max-width: 260px;">
+                                <button class="btn btn-sm btn-success flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="innocent" data-bike="${b.bicycle_code}" data-phone="${targetPhone}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Innocent</button>
+                                <button class="btn btn-sm btn-danger flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="guilty" data-bike="${b.bicycle_code}" data-phone="${targetPhone}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Guilty</button>
+                                <button class="btn btn-sm btn-secondary flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="neutral" data-bike="${b.bicycle_code}" data-phone="${targetPhone}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Neutral</button>
+                            </div>
+                            <label class="d-flex align-items-center gap-2 mt-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;">
+                                <input type="checkbox" class="waive-penalty-checkbox-mq" data-bike="${b.bicycle_code}">
+                                Waive standard point penalty
+                            </label>
+                        `;
+
+                        if (b.dispute_image_url) {
+                            actionHtml = `
+                                <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
+                                    ${buttonsBlock}
                                 </div>
                             `;
                         } else {
                             actionHtml = `
                                 <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Resolve Dispute / Settle Report:</div>
-                                    <div class="d-flex gap-2" style="max-width: 260px;">
-                                        <button class="btn btn-sm btn-success flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="innocent" data-bike="${b.bicycle_code}" data-phone="${b.last_user_phone || ''}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Innocent</button>
-                                        <button class="btn btn-sm btn-danger flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="guilty" data-bike="${b.bicycle_code}" data-phone="${b.last_user_phone || ''}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Guilty</button>
-                                        <button class="btn btn-sm btn-secondary flex-fill btn-resolve-mq" data-status="${b.condition_status}" data-verdict="neutral" data-bike="${b.bicycle_code}" data-phone="${b.last_user_phone || ''}" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Neutral</button>
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                        <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Photo not yet uploaded</span>
+                                        <label class="d-flex align-items-center gap-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                            <input type="checkbox" onchange="const el = this.closest('.maintenance-card').querySelector('.mq-hidden-actions'); if(el) el.style.display = this.checked ? 'block' : 'none';">
+                                            Settle Without Photo
+                                        </label>
                                     </div>
-                                    <label class="d-flex align-items-center gap-2 mt-2 mb-0" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;">
-                                        <input type="checkbox" class="waive-penalty-checkbox-mq" data-bike="${b.bicycle_code}">
-                                        Waive standard point penalty
-                                    </label>
+                                    <div class="mq-hidden-actions mt-2 pt-2 border-top" style="display: none; border-top: 1px dashed var(--border) !important;">
+                                        ${buttonsBlock}
+                                    </div>
                                 </div>
                             `;
                         }
@@ -714,31 +792,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     const photoLabel = b.condition_status === 'Pending_Delivery' ? 'Delivery Photo:' : 'Dispute Appeal Photo:';
 
                     return `
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 p-3 border rounded shadow-sm mb-3 maintenance-card" style="background-color: var(--bg-panel); color: var(--text-h); border-color: var(--border) !important;">
-                            <div class="d-flex flex-column flex-grow-1" style="min-width: 0;">
-                                <div class="d-flex align-items-center gap-2 mb-1">
-                                    <strong style="font-size: 1rem;">Bike #${b.bicycle_code}</strong>
-                                    <span class="badge ${badgeClass}" style="font-size: 0.75rem;">${cleanStatus}</span>
+                        <div class="d-flex flex-column gap-2 p-3 border rounded shadow-sm mb-3 maintenance-card" style="background-color: var(--bg-panel); color: var(--text-h); border-color: var(--border) !important;">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+                                <div class="d-flex flex-column flex-grow-1" style="min-width: 0;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <strong style="font-size: 1rem;">Bike #${b.bicycle_code}</strong>
+                                        <span class="badge ${badgeClass}" style="font-size: 0.75rem;">${cleanStatus}</span>
+                                    </div>
+                                    <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Location: <b>${b.new_location || 'Unknown'}</b></div>
+                                    ${(() => {
+                                        if (b.condition_status === 'Pending_Delivery') {
+                                            return `
+                                                ${b.last_user_phone && b.last_user_phone !== b.reporter_phone ? `<div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>` : ''}
+                                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Delivered By (Volunteer): <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone || ''})` : (b.reporter_phone || 'Unknown')}</b></div>
+                                            `;
+                                        } else if (b.condition_status === 'Missing') {
+                                            return `
+                                                ${b.last_user_phone ? `<div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>` : ''}
+                                                ${b.reporter_phone && b.reporter_phone !== b.last_user_phone ? `<div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Reported Missing By: <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone})` : b.reporter_phone}</b></div>` : ''}
+                                            `;
+                                        } else if (b.reporter_phone && b.last_user_phone && b.reporter_phone !== b.last_user_phone) {
+                                            return `
+                                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>
+                                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Reported Broken By: <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone})` : b.reporter_phone}</b></div>
+                                            `;
+                                        } else {
+                                            return `
+                                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">${b.dispute_reported_by ? 'Reported Broken By' : 'Last Borrower'}: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone || ''})` : (b.last_user_phone || b.reporter_phone || 'Unknown')}</b></div>
+                                            `;
+                                        }
+                                    })()}
+                                    <div class="small mb-1" style="color: var(--text-muted);">Reported Time: <b>${b.last_activity ? new Date(b.last_activity).toLocaleString() : 'Unknown'}</b></div>
                                 </div>
-                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Location: <b>${b.new_location || 'Unknown'}</b></div>
-                                ${(b.reporter_phone && b.last_user_phone && b.reporter_phone !== b.last_user_phone) ? `
-                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>
-                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Reported By (Next User): <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone})` : b.reporter_phone}</b></div>
-                                ` : `
-                                <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Reported By: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone || ''})` : (b.last_user_phone || b.reporter_phone || 'Unknown')}</b></div>
-                                `}
-                                <div class="small mb-2" style="color: var(--text-muted);">Reported Time: <b>${b.last_activity ? new Date(b.last_activity).toLocaleString() : 'Unknown'}</b></div>
-                                
+                                ${b.dispute_image_url ? `
+                                    <div class="d-flex flex-column align-items-center align-items-md-end justify-content-center flex-shrink-0 ms-md-auto text-md-end" style="min-width: 140px;">
+                                        <div style="font-size: 0.7rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); text-align: center;">${photoLabel}</div>
+                                        <a href="${b.dispute_image_url}" target="_blank" class="d-block text-center">
+                                            <img src="${b.dispute_image_url}" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" alt="Delivery proof" />
+                                        </a>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="w-100">
                                 ${actionHtml}
                             </div>
-                            ${b.dispute_image_url ? `
-                                <div class="d-flex flex-column align-items-center align-items-md-end justify-content-center flex-shrink-0 ms-md-auto text-md-end" style="min-width: 140px;">
-                                    <div style="font-size: 0.7rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); text-align: center;">${photoLabel}</div>
-                                    <a href="${b.dispute_image_url}" target="_blank" class="d-block text-center">
-                                        <img src="${b.dispute_image_url}" style="width: 140px; height: 140px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" alt="Delivery proof" />
-                                    </a>
-                                </div>
-                            ` : ''}
                         </div>
                     `;
                 }).join('');
@@ -761,10 +858,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         let confirmText = `Mark user (${phoneNumber}) as ${verdict.toUpperCase()} for bike #${bikeCode}?`;
 
                         if (status === 'Missing') {
-                            confirmTitle = verdict === 'guilty' ? 'Approve Missing Report' : 'Reject Missing Report';
-                            confirmText = verdict === 'guilty'
-                                ? `Are you sure you want to APPROVE this missing report? The previous borrower (${phoneNumber}) will be penalized for losing the bike.`
-                                : `Are you sure you want to REJECT this missing report? The reporter will receive a false report penalty.`;
+                            if (verdict === 'guilty') {
+                                confirmTitle = 'Mark Guilty (Missing)';
+                                confirmText = `Are you sure you want to mark the borrower (${phoneNumber}) GUILTY of losing Bike #${bikeCode}? The borrower will be penalized.`;
+                            } else if (verdict === 'innocent') {
+                                confirmTitle = 'Mark Innocent (Missing)';
+                                confirmText = `Are you sure you want to mark the borrower (${phoneNumber}) INNOCENT for Bike #${bikeCode}? No points deducted from borrower.`;
+                            } else {
+                                confirmTitle = 'Mark Neutral (External Factor)';
+                                confirmText = `Are you sure you want to resolve Bike #${bikeCode} as NEUTRAL (external factor)? No points deducted from borrower, and reporter receives honest report reward.`;
+                            }
                         }
 
                         confirmAction(confirmTitle, confirmText, async () => {
@@ -800,6 +903,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.addEventListener('click', async (e) => {
                         const verdict = btn.getAttribute('data-verdict');
                         const bikeCode = btn.getAttribute('data-bike');
+                        const card = btn.closest('.maintenance-card');
+                        const waiveCheckbox = card ? card.querySelector('.waive-penalty-checkbox-delivery') : null;
 
                         confirmAction('Verify Delivery', `Are you sure you want to ${verdict} the volunteer delivery of Bike #${bikeCode}?`, async () => {
                             try {
@@ -808,19 +913,50 @@ document.addEventListener('DOMContentLoaded', () => {
                                     headers: getAdminHeaders(),
                                     body: JSON.stringify({
                                         bicycle_code: bikeCode,
-                                        verdict: verdict
+                                        verdict: verdict,
+                                        waive_penalty: waiveCheckbox ? waiveCheckbox.checked : false
                                     })
                                 });
                                 const resolveData = await res.json();
                                 if (resolveData.success) {
                                     alert(resolveData.message);
-                                    renderMaintenanceQueue();
+                                    loadLogs();
+                                    renderMembersList();
                                     if (window.initDashboard) window.initDashboard(); // Refresh bikes grid
                                 } else {
                                     alert(resolveData.error || "Failed to resolve delivery.");
                                 }
                             } catch (err) {
                                 alert("Error resolving delivery.");
+                            }
+                        });
+                    });
+                });
+
+                // Attach event listeners for marking settled bikes as repaired/available
+                qList.querySelectorAll('.btn-mark-repaired').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const bikeCode = btn.getAttribute('data-bike');
+                        confirmAction('Mark Repaired / Available', `Mark Bike #${bikeCode} as repaired and ready for use?`, async () => {
+                            try {
+                                const res = await fetch('/api/admin/bicycles/override', {
+                                    method: 'POST',
+                                    headers: getAdminHeaders(),
+                                    body: JSON.stringify({
+                                        bicycle_code: bikeCode,
+                                        condition_status: 'Good'
+                                    })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert('Bike marked as repaired and available!');
+                                    loadLogs();
+                                    if (window.initDashboard) window.initDashboard();
+                                } else {
+                                    alert(data.error || 'Failed to update bicycle.');
+                                }
+                            } catch (err) {
+                                alert('Error updating bicycle status.');
                             }
                         });
                     });
@@ -1403,6 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <option value="In_Repair" ${bike.condition_status === 'In_Repair' ? 'selected' : ''}>In Repair</option>
                             <option value="Disputed" ${bike.condition_status === 'Disputed' ? 'selected' : ''}>Disputed</option>
                             <option value="Missing" ${bike.condition_status === 'Missing' ? 'selected' : ''}>Missing</option>
+                            <option value="Pending_Delivery" ${bike.condition_status === 'Pending_Delivery' ? 'selected' : ''}>Pending Delivery</option>
                         </select>
                     </div>
                     <div class="col-12 col-sm-4">
