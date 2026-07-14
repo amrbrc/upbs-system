@@ -128,6 +128,32 @@ async function runMigrations() {
         console.error("[DB] Migration error fb_bot_sessions table:", e.message);
     }
     try {
+        await upbsPool.query(`
+            CREATE TABLE IF NOT EXISTS non_registered_senders (
+                phone_number VARCHAR(20) NOT NULL,
+                message_id INT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (phone_number, message_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+        console.log("[DB] Ensured non_registered_senders table exists.");
+    } catch (e) {
+        console.error("[DB] Migration error non_registered_senders table:", e.message);
+    }
+    try {
+        await upbsPool.query(`
+            CREATE TABLE IF NOT EXISTS invalid_command_senders (
+                phone_number VARCHAR(20) NOT NULL,
+                message_id INT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (phone_number, message_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+        console.log("[DB] Ensured invalid_command_senders table exists.");
+    } catch (e) {
+        console.error("[DB] Migration error invalid_command_senders table:", e.message);
+    }
+    try {
         // Shift existing UTC datetimes to PST (+08:00) exactly once (v3)
         const [rows] = await upbsPool.query("SELECT setting_value FROM app_settings WHERE setting_key = 'utc_to_pst_shifted_v3'");
         if (rows.length === 0) {

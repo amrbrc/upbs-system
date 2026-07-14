@@ -191,6 +191,26 @@ async function main() {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         `);
 
+        // non_registered_senders table
+        await connection.query(`
+            CREATE TABLE non_registered_senders (
+                phone_number VARCHAR(20) NOT NULL,
+                message_id INT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (phone_number, message_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        // invalid_command_senders table
+        await connection.query(`
+            CREATE TABLE invalid_command_senders (
+                phone_number VARCHAR(20) NOT NULL,
+                message_id INT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (phone_number, message_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
         console.log('[DB Setup] "upbs" tables created successfully.');
 
         // 3. Seed upbs database
