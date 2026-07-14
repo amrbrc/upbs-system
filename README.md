@@ -12,6 +12,7 @@ The system allows registered users to search for available bicycles, query locat
 - [System Architecture](#system-architecture)
 - [REST API Reference](#rest-api-reference)
 - [Tech Stack](#tech-stack)
+- [Local Development & Working Environment](#local-development--working-environment-setup)
 - [Deployment Guide & Environment Setup](#deployment-guide--environment-setup)
   - [Scenario A: Single Local Hardware Deployment](#scenario-a-single-local-hardware-deployment-all-in-one)
   - [Scenario B: Hybrid Cloud/Hardware Deployment](#scenario-b-hybrid-cloudhardware-deployment-separated-box)
@@ -123,6 +124,109 @@ To access protected endpoints, request headers must supply:
 - **Framework**: Express.js
 - **Database**: MySQL (Split into `smsd` for SMS daemon operations and `upbs` for bike sharing data)
 - **Hardware Integration**: Gammu SMSD
+
+---
+
+## Local Development & Working Environment Setup
+
+This section provides a guide to setting up your local machine, understanding the workspace architecture, finding which files to edit for specific tasks, and testing changes locally.
+
+### 1. Prerequisites (Mga Kailangang I-install)
+Before starting, ensure you have the following installed on your machine:
+*   **Node.js (v18 or higher)**: The JavaScript runtime used to run the servers.
+*   **MySQL Server**: For running local databases.
+*   **Git**: For version control.
+*   **Code Editor (VS Code Recommended)**: With the **Live Server** extension installed (useful for previewing static frontend pages).
+*   **Database GUI Tool (Optional)**: [DBeaver](https://dbeaver.io/) or [TablePlus](https://tableplus.com/) to inspect your MySQL databases.
+
+---
+
+### 2. Environment Variables Configuration
+Copy the sample config files in both services and input your local MySQL database login credentials.
+
+#### A. Worker API Config
+Create a `.env` file in the `worker-api/` directory:
+```bash
+cp worker-api/.env.example worker-api/.env
+```
+Ensure the database settings in `worker-api/.env` match your local MySQL settings:
+*   `DB_HOST`: `127.0.0.1`
+*   `DB_PORT`: `3306`
+*   `DB_USER` & `DB_PASSWORD`: Your local MySQL username and password.
+*   `DB_NAME`: `upbs`
+*   `PORT`: `3001` (Port where the API server will run).
+
+#### B. Gateway Server Config
+Create a `.env` file in the `gateway-server/` directory:
+```bash
+cp gateway-server/.env.example gateway-server/.env
+```
+Ensure the database settings in `gateway-server/.env` match:
+*   `DB_HOST`, `DB_USER`, `DB_PASSWORD`: Matches your local MySQL settings.
+*   `DB_NAME`: `smsd` (The SMS Daemon database).
+*   `WORKER_URL`: `http://localhost:3001`
+
+---
+
+### 3. Workspace Installation & Setup
+Run the commands below from the root of the project to set up the dependencies and seed databases:
+
+```bash
+# 1. Install dependencies for all sub-projects at once
+npm run install:all
+
+# 2. Recreate the 'upbs' and 'smsd' databases with test seed data
+npm run db:recreate
+```
+*Note: The `npm run db:recreate` script (located at `worker-api/recreate_db.js`) will automatically create the `upbs` and `smsd` databases and fill them with mock membership accounts, active bicycles, parking stations, and system logs.*
+
+---
+
+### 4. How to Run Services Locally
+Open two separate terminals in the project root:
+
+*   **Terminal 1 (Worker API)**:
+    ```bash
+    npm run start:worker
+    ```
+*   **Terminal 2 (SMS Gateway Server)**:
+    ```bash
+    npm run start:gateway
+    ```
+
+Once running:
+*   The API endpoints will be accessible at `http://localhost:3001`.
+*   The dashboards are served statically at `http://localhost:3001/` (e.g. `http://localhost:3001/index.html` for login, `/student-dashboard.html` or `/admin-dashboard.html`).
+
+---
+
+### 5. 📂 Where to Edit? (Codebase Reference Map)
+When working on a feature or fixing a bug, use the table below to find which files to open:
+
+| If you are modifying... | ...head over to this directory / file | Key files to edit |
+| :--- | :--- | :--- |
+| **Frontend/Design of Dashboards** <br>*(UI layouts, HTML templates, CSS, forms)* | `dashboard/` | *   `dashboard/index.html`<br>*   `dashboard/student-dashboard.html`<br>*   `dashboard/admin-dashboard.html`<br>*   `dashboard/css/` |
+| **Frontend Page Logic & Maps** <br>*(Fetch requests to API, dynamic UI rendering, Leaflet maps)* | `dashboard/js/` | *   `dashboard/js/student.js` (Student portal action logic)<br>*   `dashboard/js/admin-search.js` & `settings.js` (Admin panels)<br>*   `dashboard/js/map.js` (Leaflet coordinates map) |
+| **Backend REST API Routes** <br>*(Registering new URL paths or middleware settings)* | `worker-api/routes/` | *   `worker-api/routes/api.js` |
+| **Backend Core Business Logic** <br>*(Borrowing/returning algorithms, members validation, admin settings)* | `worker-api/controllers/` | *   `worker-api/controllers/bikeController.js` (Borrow/Return flow)<br>*   `worker-api/controllers/adminController.js` (Admin overrides)<br>*   `worker-api/controllers/memberController.js` (Member retrieval) |
+| **Database Schema and Seeds** <br>*(Tables recreation, mock data seeding)* | `worker-api/recreate_db.js` | *   `worker-api/recreate_db.js`<br>*   `worker-api/schema_update.sql` |
+| **Background Cron Schedules** <br>*(Late penalties tracking, resetting bi-weekly leaderboards)* | `worker-api/services/` | *   `worker-api/services/cronJobs.js` |
+| **SMS Gateway / Modem Interface** <br>*(Modem database polling, parsing incoming SMS commands)* | `gateway-server/` | *   `gateway-server/server.js` |
+
+---
+
+### 6. 🧪 How to Test SMS Commands Locally (Mocking)
+You do **not** need a physical GSM USB modem connected to your PC to test the SMS message processing locally. You can mock SMS receipts directly in your database:
+
+1.  Start the worker and gateway services (`npm run start:worker` and `npm run start:gateway`).
+2.  Connect to your local MySQL server using a GUI tool (DBeaver, TablePlus, or MySQL Workbench).
+3.  Simulate an incoming text by executing this SQL query:
+    ```sql
+    INSERT INTO smsd.inbox (SenderNumber, TextDecoded, ReceivingDateTime) 
+    VALUES ('+639171234567', 'search all', NOW());
+    ```
+4.  Observe your **Gateway Server** console logs. You should see it capture the text, forward it to the **Worker API**, and receive the text reply.
+5.  Inspect the `smsd.outbox` table in your database. You will see the auto-generated response (e.g. `"UP Bikeshare: Active Stations..."`) queued and ready to send.
 
 ---
 
