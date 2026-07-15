@@ -1006,7 +1006,7 @@ const delivered = async (req, res) => {
     let upbsConn;
 
     if (!deliveryLocation) {
-        return res.json({ reply: `Please specify the station where you delivered Bike ${bicycleCode}. Example: delivered ${bicycleCode} engg` });
+        return res.json({ reply: `Please specify the station where you delivered Bike ${bicycleCode}. Example: delivered ${bicycleCode} eee` });
     }
 
     try {
@@ -1082,7 +1082,7 @@ const delivered = async (req, res) => {
                 "UPDATE bicycle_codes SET condition_status = 'Pending_Delivery', new_location = ?, dispute_reported_by = ?, dispute_image_url = NULL, broken_reported_at = COALESCE(broken_reported_at, NOW()) WHERE bicycle_code = ?",
                 [deliveryLocation, smsSender, bicycleCode]
             );
-            replyMessage = `Thank you! Bike ${bicycleCode} has been reported as delivered to ${deliveryLocation.toUpperCase()}. To confirm your +${reward} trust points, please take a clear picture of the bike at the hub and upload it to our Facebook Messenger bot.`;
+            replyMessage = `Thank you! Bike ${bicycleCode} delivered to ${deliveryLocation.toUpperCase()}. Upload a hub photo to m(.)me/upbikesharebot (remove parenthesis) to claim +${reward} pts.`;
 
             // Alert admins
             try {

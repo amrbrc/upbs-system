@@ -68,6 +68,33 @@ document.addEventListener('DOMContentLoaded', () => {
         'ncpag': '#60a5fa'
     };
 
+    const EXTRA_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#f97316', '#0ea5e9', '#84cc16'];
+    let extraColorIndex = 0;
+
+    function getOrAssignStationColor(stationName) {
+        if (!stationName) return '#10b981';
+        const key = stationName.toLowerCase().trim();
+
+        // Check global window.STATION_COLORS first (from map.js)
+        if (window.STATION_COLORS && window.STATION_COLORS[key]) {
+            return window.STATION_COLORS[key];
+        }
+        if (stationColors[key]) {
+            return stationColors[key];
+        }
+
+        // Assign a new distinct color if station is not registered
+        const assignedColor = EXTRA_COLORS[extraColorIndex % EXTRA_COLORS.length];
+        extraColorIndex++;
+
+        stationColors[key] = assignedColor;
+        if (window.STATION_COLORS) {
+            window.STATION_COLORS[key] = assignedColor;
+        }
+
+        return assignedColor;
+    }
+
     const stationLabels = {
         'palma_hall': 'Palma Hall',
         'chk': 'CHK',
@@ -475,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         popularStationsData.forEach(item => {
             const key = item.station.toLowerCase().trim();
             const label = stationLabels[key] || item.station.toUpperCase();
-            const color = stationColors[key] || '#10b981';
+            const color = getOrAssignStationColor(item.station);
 
             stationNames.push(label);
             stationCounts.push(item.count);
@@ -626,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
         popularStationsData.forEach(item => {
             const key = item.station.toLowerCase().trim();
             const label = stationLabels[key] || item.station.toUpperCase();
-            const color = stationColors[key] || '#10b981';
+            const color = getOrAssignStationColor(item.station);
 
             stationNames.push(label);
             stationCounts.push(item.count);

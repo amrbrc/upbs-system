@@ -76,7 +76,7 @@ const startBorrowRemindersJob = () => {
                 if (row.reminder_4h_sent === 0 && borrowHours >= reminder4hThreshold) {
                     // Send Warning Reminder
                     const hoursLeft = Math.max(1, borrowLimitHours - reminder4hThreshold);
-                    const text = `Reminder: You have ${hoursLeft} hour(s) left on Bike ${row.bicycle_code}. Please return it to a station soon. Remember to text 'done ${row.bicycle_code}' when finished.`;
+                    const text = `Reminder: ${hoursLeft} hr(s) left for Bike ${row.bicycle_code}. Return to a station soon & text 'done ${row.bicycle_code}' when finished.`;
                     const success = await sendSMS(row.phone_number, text);
                     if (success) {
                         await db.upbsPool.query(
@@ -152,7 +152,7 @@ const startSixHourPenaltyJob = () => {
                     [row.id]
                 );
 
-                const text = `ALERT: You have exceeded the borrow time limit for Bike ${row.bicycle_code}. A -${absolutePenalty} point demerit has been applied. You will continue to lose ${absolutePenalty} demerits EVERY HOUR until the bike is returned.`;
+                const text = `ALERT: Borrow time limit exceeded for Bike ${row.bicycle_code}. -${absolutePenalty} pt demerit applied. You will lose ${absolutePenalty} pts/hr until returned. Return immediately!`;
                 await sendSMS(row.phone_number, text);
 
                 const notificationService = require('./notificationService');
@@ -363,7 +363,7 @@ const startHandshakeTimeoutJob = () => {
 
                     await conn.commit();
 
-                    const text = `ALERT: You failed to confirm the condition of Bike ${row.bicycle_code} within ${timeoutMins} minutes. Your trip has been auto-completed, and a -${absolutePenalty} point penalty has been applied to your account.`;
+                    const text = `ALERT: You failed to confirm the condition of Bike ${row.bicycle_code} within ${timeoutMins} mins. Your trip has been auto-completed, and a -${absolutePenalty} point penalty has been applied to your account.`;
                     await sendSMS(row.phone_number, text);
 
                 } catch (txErr) {

@@ -451,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         settingsObj[row.setting_name] = row.setting_value;
                     });
                 }
-                
+
                 // Populate Admin Alert Contacts displays and save in global state
                 const adminName1 = settingsObj['admin_alert_name_1'] || '';
                 const adminPhone1 = settingsObj['admin_alert_phone_1'] || '';
@@ -801,27 +801,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </div>
                                     <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Location: <b>${b.new_location || 'Unknown'}</b></div>
                                     ${(() => {
-                                        if (b.condition_status === 'Pending_Delivery') {
-                                            return `
+                            if (b.condition_status === 'Pending_Delivery') {
+                                return `
                                                 ${b.last_user_phone && b.last_user_phone !== b.reporter_phone ? `<div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>` : ''}
                                                 <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Delivered By (Volunteer): <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone || ''})` : (b.reporter_phone || 'Unknown')}</b></div>
                                             `;
-                                        } else if (b.condition_status === 'Missing') {
-                                            return `
+                            } else if (b.condition_status === 'Missing') {
+                                return `
                                                 ${b.last_user_phone ? `<div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>` : ''}
                                                 ${b.reporter_phone && b.reporter_phone !== b.last_user_phone ? `<div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Reported Missing By: <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone})` : b.reporter_phone}</b></div>` : ''}
                                             `;
-                                        } else if (b.reporter_phone && b.last_user_phone && b.reporter_phone !== b.last_user_phone) {
-                                            return `
+                            } else if (b.reporter_phone && b.last_user_phone && b.reporter_phone !== b.last_user_phone) {
+                                return `
                                                 <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Previous Borrower: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone})` : b.last_user_phone}</b></div>
                                                 <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">Reported Broken By: <b>${b.reporter_name ? `${b.reporter_name} (${b.reporter_phone})` : b.reporter_phone}</b></div>
                                             `;
-                                        } else {
-                                            return `
+                            } else {
+                                return `
                                                 <div class="small" style="color: var(--text-muted); margin-bottom: 2px;">${b.dispute_reported_by ? 'Reported Broken By' : 'Last Borrower'}: <b>${b.last_user_name ? `${b.last_user_name} (${b.last_user_phone || ''})` : (b.last_user_phone || b.reporter_phone || 'Unknown')}</b></div>
                                             `;
-                                        }
-                                    })()}
+                            }
+                        })()}
                                     <div class="small mb-1" style="color: var(--text-muted);">Reported Time: <b>${b.last_activity ? new Date(b.last_activity).toLocaleString() : 'Unknown'}</b></div>
                                 </div>
                                 ${b.dispute_image_url ? `
@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <!-- Row 3: Action Buttons -->
                     <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; border-top: 1px solid var(--border); padding-top: 8px; align-items: center;">
                         <button class="btn btn-sm btn-outline-success fw-bold" onclick="editMemberPoints('${mem.phone_number}', ${mem.trust_points})" style="font-size: 0.68rem; padding: 4px 8px; white-space: nowrap; height: 28px;">
-                            Add Points
+                            Edit Points
                         </button>
                         ${(mem.is_active === 0 || mem.is_active === false || mem.is_active === '0') ? `
                             <button class="btn btn-sm btn-outline-primary fw-bold" onclick="activateMember('${mem.phone_number}')" style="font-size: 0.68rem; padding: 4px 8px; white-space: nowrap; height: 28px;">
@@ -2033,7 +2033,7 @@ document.addEventListener('DOMContentLoaded', () => {
         noneDiv.className = 'admin-search-item';
         noneDiv.style.cssText = 'padding: 6px 10px; cursor: pointer; border-radius: 4px; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 6px;';
         noneDiv.innerHTML = `🚫 Set to None (Disable Alert)`;
-        
+
         // Add hover effects inline
         noneDiv.addEventListener('mouseenter', () => noneDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.08)');
         noneDiv.addEventListener('mouseleave', () => noneDiv.style.backgroundColor = 'transparent');
@@ -2118,7 +2118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveMsg.style.display = 'block';
                     setTimeout(() => { saveMsg.style.display = 'none'; }, 3000);
                 }
-                
+
                 // Update global state and reload row view
                 if (index === 1) {
                     window.currentAdminName1 = name;
@@ -2204,7 +2204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 try {
-                    const results = await Promise.all(updates.map(u => 
+                    const results = await Promise.all(updates.map(u =>
                         fetch('/api/admin/bicycles/override', {
                             method: 'POST',
                             headers: getAdminHeaders(),
