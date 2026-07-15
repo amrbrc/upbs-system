@@ -14,7 +14,7 @@ async function main() {
     const host = process.env.DB_HOST || '127.0.0.1';
     const port = Number(process.env.DB_PORT) || 3306;
     const user = process.env.DB_ROOT_USER || process.env.DB_USER || 'upbs2024';
-    const password = process.env.DB_ROOT_PASSWORD || process.env.DB_PASSWORD || 'upbs2024';
+    const password = process.env.DB_ROOT_PASSWORD !== undefined ? process.env.DB_ROOT_PASSWORD : (process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : 'upbs2024');
 
     console.log(`[DB Setup] Connecting to MySQL server at ${host}:${port} as user "${user}"...`);
 
@@ -359,7 +359,7 @@ async function main() {
         await connection.query(`
             CREATE TABLE phones (
                 ID text NOT NULL,
-                IMEI text NOT NULL PRIMARY KEY,
+                IMEI VARCHAR(35) NOT NULL PRIMARY KEY,
                 Client text NOT NULL,
                 Sent int(11) NOT NULL DEFAULT '0',
                 Received int(11) NOT NULL DEFAULT '0',

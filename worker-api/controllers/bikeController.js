@@ -541,9 +541,11 @@ const getLocations = async (req, res) => {
 
 const getHistory = async (req, res) => {
     const { bicycleCode } = req.params;
+    const limit = Math.max(1, Math.min(200, parseInt(req.query.limit, 10) || 50));
+    const offset = Math.max(0, parseInt(req.query.offset, 10) || 0);
     try {
         const [rows] = await db.upbsPool.query(
-            'SELECT previous_location, new_location, borrowed_by, borrowed_at FROM bicycle_history WHERE bicycle_code = ? ORDER BY borrowed_at DESC',
+            `SELECT previous_location, new_location, borrowed_by, borrowed_at FROM bicycle_history WHERE bicycle_code = ? ORDER BY borrowed_at DESC LIMIT ${limit} OFFSET ${offset}`,
             [bicycleCode]
         );
         return res.json(rows);

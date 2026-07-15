@@ -696,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             `;
                         }
                     } else if (b.condition_status === 'Missing') {
-                        if (b.dispute_reported_by) {
+                        if (b.dispute_reported_by || b.condition_status === 'Missing') {
                             const targetPhone = b.last_user_phone || b.reporter_phone || '';
                             const buttonsBlock = `
                                 <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Resolve Missing Report:</div>
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             `;
                         }
-                    } else if (!b.dispute_reported_by) {
+                    } else if (!b.dispute_reported_by && b.condition_status !== 'Disputed' && !b.dispute_image_url) {
                         actionHtml = `
                             <div class="mt-2 pt-2 border-top" style="border-top: 1px dashed var(--border) !important;">
                                 <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">
@@ -1746,72 +1746,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             `;
-
-            // If the user is frozen, we inject the Dispute Resolution UI directly into their card!
-            if (isFrozen) {
-                const actionDiv = document.createElement('div');
-                actionDiv.style.display = 'flex';
-                actionDiv.style.flexDirection = 'column';
-                actionDiv.style.gap = '5px';
-                actionDiv.style.width = '100%';
-                actionDiv.style.marginTop = '4px';
-                actionDiv.style.paddingTop = '8px';
-                actionDiv.style.borderTop = '1px dashed var(--border)';
-
-                actionDiv.innerHTML = `
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Resolve Dispute (Enter Disputed Bike Code):</div>
-                    <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
-                        <input type="text" class="form-control settings-input flex-grow-1" placeholder="Bike Code" style="height: 32px; font-size: 0.75rem; min-width: 70px;">
-                        <div class="d-flex gap-1 flex-grow-1">
-                            <button class="btn btn-sm btn-success flex-fill btn-innocent" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Innocent</button>
-                            <button class="btn btn-sm btn-danger flex-fill btn-guilty" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Guilty</button>
-                            <button class="btn btn-sm btn-secondary flex-fill btn-neutral" style="font-size: 0.7rem; font-weight: 700; height: 32px; padding: 2px 8px;">Neutral</button>
-                        </div>
-                    </div>
-                    <label class="d-flex align-items-center gap-2 mt-2" style="font-size: 0.7rem; color: var(--text-muted); cursor: pointer;">
-                        <input type="checkbox" class="waive-penalty-checkbox">
-                        Waive standard point penalty
-                    </label>
-                `;
-
-                const bikeInput = actionDiv.querySelector('input[type="text"]');
-                const waiveCheckbox = actionDiv.querySelector('.waive-penalty-checkbox');
-                const btnInnocent = actionDiv.querySelector('.btn-innocent');
-                const btnGuilty = actionDiv.querySelector('.btn-guilty');
-                const btnNeutral = actionDiv.querySelector('.btn-neutral');
-
-                const handleResolve = async (verdict) => {
-                    const bikeCode = bikeInput.value.trim();
-                    if (!bikeCode) return alert("Please enter the Disputed Bike Code first!");
-
-                    confirmAction('Resolve Dispute', `Mark user ${mem.firstname} as ${verdict} for bike ${bikeCode}?`, async () => {
-                        try {
-                            const res = await fetch('/api/admin/resolve-dispute', {
-                                method: 'POST',
-                                headers: getAdminHeaders(),
-                                body: JSON.stringify({ phone_number: mem.phone_number, verdict: verdict, bicycle_code: bikeCode, waive_penalty: waiveCheckbox.checked })
-                            });
-                            const data = await res.json();
-                            if (data.success) {
-                                alert(data.message);
-                                renderMembersList(); // Refresh member list to remove FROZEN badge
-                                if (window.initDashboard) window.initDashboard(); // Refresh bikes grid to remove DISPUTED border
-                            } else {
-                                alert(data.error);
-                            }
-                        } catch (e) {
-                            alert("Error resolving dispute.");
-                        }
-                    });
-                };
-
-                btnInnocent.addEventListener('click', () => handleResolve('innocent'));
-                btnGuilty.addEventListener('click', () => handleResolve('guilty'));
-                btnNeutral.addEventListener('click', () => handleResolve('neutral'));
-
-                div.appendChild(actionDiv);
-            }
-
             membersList.appendChild(div);
         });
     }

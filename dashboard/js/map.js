@@ -17,16 +17,56 @@ const STATION_COORDS = {
     'ncpag': [14.656572139748228, 121.0604108369428],
 };
 
+function normalizeStationKey(name) {
+    if (!name) return 'unknown';
+    const clean = name.toLowerCase().replace(/[\s_]+/g, '');
+    const aliasMap = {
+        'palmahall': 'palma_hall',
+        'palma': 'palma_hall',
+        'palma_hall': 'palma_hall',
+        'chk': 'chk',
+        'humankinetics': 'chk',
+        'eee': 'eee',
+        'eeebuilding': 'eee',
+        'engg': 'engg',
+        'engineering': 'engg',
+        'engineeringcomplex': 'engg',
+        'vinzons': 'vinzons',
+        'vinzonshall': 'vinzons',
+        'nec': 'nec',
+        'necbuilding': 'nec',
+        'ncpag': 'ncpag'
+    };
+    return aliasMap[clean] || clean;
+}
+window.normalizeStationKey = normalizeStationKey;
+
 const STATION_COLORS = {
-    'palma_hall': '#22d3ee', // Cyan
-    'chk': '#a78bfa', // Purple
-    'eee': '#34d399', // Green
-    'engg': '#fb923c', // Orange
-    'vinzons': '#f472b6', // Pink
-    'nec': '#facc15', // Yellow
-    'ncpag': '#60a5fa', // Blue
+    'palma_hall': '#00E5FF', // Sky Blue / Cyan
+    'chk': '#D500F9',        // Vibrant Purple / Violet
+    'eee': '#00E676',        // Emerald Green
+    'engg': '#FF6D00',       // Deep Orange
+    'vinzons': '#FF1744',    // Crimson Red
+    'nec': '#FFD600',        // Yellow / Gold
+    'ncpag': '#2979FF',      // Royal Blue
 };
 window.STATION_COLORS = STATION_COLORS; // Expose globally
+
+const DISTINCT_PALETTE = [
+    '#AEEA00', // Lime
+    '#F50057', // Magenta / Hot Pink
+    '#00BFA5', // Teal
+    '#8D6E63', // Bronze / Warm Brown
+    '#3D5AFE', // Indigo
+    '#64DD17', // Chartreuse
+    '#FFAB00', // Amber
+    '#1DE9B6', // Turquoise
+    '#E040FB', // Orchid / Lavender
+    '#69F0AE', // Mint
+    '#536DFE', // Slate Blue
+    '#C0CA33', // Olive Green
+    '#FF8A80'  // Coral / Peach
+];
 
 
 // Display-friendly labels
@@ -177,19 +217,21 @@ async function plotStationMarkers() {
                 .filter(loc => Number(loc.is_disabled) !== 1);
 
             const allMarkers = []; // Store markers to fit bounds
-            let legendHtml = ['<div style="font-weight:700; margin-bottom:6px; color:#22d3ee;">Legend</div>'];
-            const EXTRA_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#f97316', '#0ea5e9', '#84cc16'];
+            let legendHtml = ['<div style="font-weight:700; margin-bottom:6px; color:#00E5FF;">Legend</div>'];
             let extraColorIndex = 0;
 
             activeStations.forEach(loc => {
-                const key = loc.location_name.toLowerCase().trim();
-                let coords = STATION_COORDS[key];
+                const normKey = normalizeStationKey(loc.location_name);
+                const rawKey = loc.location_name.toLowerCase().trim();
+                const key = normKey;
+                let coords = STATION_COORDS[key] || STATION_COORDS[rawKey];
 
                 // Override with database coords if they exist
                 if (loc.latitude !== undefined && loc.latitude !== null && loc.longitude !== undefined && loc.longitude !== null) {
                     coords = [parseFloat(loc.latitude), parseFloat(loc.longitude)];
                     // Save to global STATION_COORDS so zoomToStation works
                     STATION_COORDS[key] = coords;
+                    STATION_COORDS[rawKey] = coords;
                 }
                 
                 if (!coords) {
@@ -197,14 +239,25 @@ async function plotStationMarkers() {
                     return; // Skip if no coordinates known
                 }
 
-                let color = STATION_COLORS[key];
+                let color = STATION_COLORS[key] || STATION_COLORS[rawKey];
                 if (!color) {
-                    color = EXTRA_COLORS[extraColorIndex % EXTRA_COLORS.length];
+                    const usedColors = new Set(Object.values(STATION_COLORS));
+                    for (const candidate of DISTINCT_PALETTE) {
+                        if (!usedColors.has(candidate)) {
+                            color = candidate;
+                            break;
+                        }
+                    }
+                    if (!color) {
+                        const angle = Math.floor((extraColorIndex * 137.5) % 360);
+                        color = `hsl(${angle}, 85%, 55%)`;
+                        extraColorIndex++;
+                    }
                     STATION_COLORS[key] = color;
-                    extraColorIndex++;
+                    STATION_COLORS[rawKey] = color;
                 }
 
-                const label = STATION_LABELS[key] || loc.location_name;
+                const label = STATION_LABELS[key] || STATION_LABELS[rawKey] || loc.location_name;
 
                 legendHtml.push(
                     `<div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">

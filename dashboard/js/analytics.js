@@ -59,37 +59,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Station colors matching STATION_COLORS in map.js
     const stationColors = {
-        'palma_hall': '#22d3ee',
-        'chk': '#a78bfa',
-        'eee': '#34d399',
-        'engg': '#fb923c',
-        'vinzons': '#f472b6',
-        'nec': '#facc15',
-        'ncpag': '#60a5fa'
+        'palma_hall': '#00E5FF',
+        'chk': '#D500F9',
+        'eee': '#00E676',
+        'engg': '#FF6D00',
+        'vinzons': '#FF1744',
+        'nec': '#FFD600',
+        'ncpag': '#2979FF'
     };
 
-    const EXTRA_COLORS = ['#ef4444', '#10b981', '#8b5cf6', '#ec4899', '#f97316', '#0ea5e9', '#84cc16'];
+    const DISTINCT_PALETTE = [
+        '#AEEA00', // Lime
+        '#F50057', // Magenta / Hot Pink
+        '#00BFA5', // Teal
+        '#8D6E63', // Bronze / Warm Brown
+        '#3D5AFE', // Indigo
+        '#64DD17', // Chartreuse
+        '#FFAB00', // Amber
+        '#1DE9B6', // Turquoise
+        '#E040FB', // Orchid / Lavender
+        '#69F0AE', // Mint
+        '#536DFE', // Slate Blue
+        '#C0CA33', // Olive Green
+        '#FF8A80'  // Coral / Peach
+    ];
     let extraColorIndex = 0;
 
     function getOrAssignStationColor(stationName) {
-        if (!stationName) return '#10b981';
-        const key = stationName.toLowerCase().trim();
+        if (!stationName) return '#1DE9B6';
+        const normKey = window.normalizeStationKey ? window.normalizeStationKey(stationName) : stationName.toLowerCase().replace(/[\s_]+/g, '');
+        const rawKey = stationName.toLowerCase().trim();
+        const key = normKey;
 
         // Check global window.STATION_COLORS first (from map.js)
-        if (window.STATION_COLORS && window.STATION_COLORS[key]) {
-            return window.STATION_COLORS[key];
+        if (window.STATION_COLORS && (window.STATION_COLORS[key] || window.STATION_COLORS[rawKey])) {
+            return window.STATION_COLORS[key] || window.STATION_COLORS[rawKey];
         }
-        if (stationColors[key]) {
-            return stationColors[key];
+        if (stationColors[key] || stationColors[rawKey]) {
+            return stationColors[key] || stationColors[rawKey];
         }
 
-        // Assign a new distinct color if station is not registered
-        const assignedColor = EXTRA_COLORS[extraColorIndex % EXTRA_COLORS.length];
-        extraColorIndex++;
+        // Assign a new distinct color without hue collisions
+        const usedColors = new Set([
+            ...(window.STATION_COLORS ? Object.values(window.STATION_COLORS) : []),
+            ...Object.values(stationColors)
+        ]);
+
+        let assignedColor;
+        for (const candidate of DISTINCT_PALETTE) {
+            if (!usedColors.has(candidate)) {
+                assignedColor = candidate;
+                break;
+            }
+        }
+
+        if (!assignedColor) {
+            const angle = Math.floor((extraColorIndex * 137.5) % 360);
+            assignedColor = `hsl(${angle}, 85%, 55%)`;
+            extraColorIndex++;
+        }
 
         stationColors[key] = assignedColor;
+        stationColors[rawKey] = assignedColor;
         if (window.STATION_COLORS) {
             window.STATION_COLORS[key] = assignedColor;
+            window.STATION_COLORS[rawKey] = assignedColor;
         }
 
         return assignedColor;
@@ -500,8 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const backgroundColors = [];
 
         popularStationsData.forEach(item => {
-            const key = item.station.toLowerCase().trim();
-            const label = stationLabels[key] || item.station.toUpperCase();
+            const normKey = window.normalizeStationKey ? window.normalizeStationKey(item.station) : item.station.toLowerCase().replace(/[\s_]+/g, '');
+            const rawKey = item.station.toLowerCase().trim();
+            const label = stationLabels[normKey] || stationLabels[rawKey] || item.station.toUpperCase();
             const color = getOrAssignStationColor(item.station);
 
             stationNames.push(label);
@@ -651,8 +686,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const backgroundColors = [];
 
         popularStationsData.forEach(item => {
-            const key = item.station.toLowerCase().trim();
-            const label = stationLabels[key] || item.station.toUpperCase();
+            const normKey = window.normalizeStationKey ? window.normalizeStationKey(item.station) : item.station.toLowerCase().replace(/[\s_]+/g, '');
+            const rawKey = item.station.toLowerCase().trim();
+            const label = stationLabels[normKey] || stationLabels[rawKey] || item.station.toUpperCase();
             const color = getOrAssignStationColor(item.station);
 
             stationNames.push(label);

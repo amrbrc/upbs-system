@@ -532,8 +532,8 @@ async function processIncomingMessage(psid, message) {
 
         const dispute = disputes[0];
 
-        // Save image URL to both the bike code and history record
-        await db.upbsPool.query('UPDATE bicycle_codes SET dispute_image_url = ? WHERE bicycle_code = ?', [imageUrl, dispute.bicycle_code]);
+        // Save image URL to both the bike code and history record (and set dispute_reported_by if null)
+        await db.upbsPool.query('UPDATE bicycle_codes SET dispute_image_url = ?, dispute_reported_by = COALESCE(dispute_reported_by, ?) WHERE bicycle_code = ?', [imageUrl, session.phone_number, dispute.bicycle_code]);
         await db.upbsPool.query('UPDATE bicycle_history SET dispute_image_url = ? WHERE id = ?', [imageUrl, dispute.history_id]);
 
         // Trigger off-dashboard admin notifications (Discord Webhook)
