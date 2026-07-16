@@ -72,7 +72,7 @@ async function sendDiscordNotification(studentName, phoneNumber, bikeCode, image
  */
 async function sendDisputeCreatedNotification(bikeCode, reporterName, reporterPhone, frozenName, frozenPhone) {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    
+
     // Asynchronously send SMS alerts to admin contacts
     sendAdminSmsAlert(`UPBS ALERT: Bike ${bikeCode} reported broken by next user. Prev borrower ${frozenName || 'Unknown'} (${frozenPhone}) points frozen. Review in dashboard.`)
         .catch(err => console.error('[Notification] Failed to trigger admin SMS alert:', err.message));
@@ -114,7 +114,7 @@ async function sendDisputeCreatedNotification(bikeCode, reporterName, reporterPh
  */
 async function sendMissingCreatedNotification(bikeCode, reporterName, reporterPhone, frozenName, frozenPhone) {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    
+
     // Asynchronously send SMS alerts to admin contacts
     sendAdminSmsAlert(`UPBS ALERT: Bike ${bikeCode} reported MISSING by ${reporterName} (${reporterPhone}). Prev borrower ${frozenName || 'Unknown'} (${frozenPhone}) points frozen.`)
         .catch(err => console.error('[Notification] Failed to trigger admin SMS alert:', err.message));

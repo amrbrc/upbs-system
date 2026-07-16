@@ -267,7 +267,7 @@ async function processIncomingMessage(psid, message) {
 
     // 2. Fetch or initialize the user's session
     const [sessions] = await db.upbsPool.query('SELECT * FROM fb_bot_sessions WHERE psid = ?', [psid]);
-    
+
     let session;
     if (sessions.length === 0) {
         // Create new session

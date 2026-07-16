@@ -152,7 +152,7 @@ const startSixHourPenaltyJob = () => {
                     [row.id]
                 );
 
-                const text = `ALERT: Borrow time limit exceeded for Bike ${row.bicycle_code}. -${absolutePenalty} pt demerit applied. You will lose ${absolutePenalty} pts/hr until returned. Return immediately!`;
+                const text = `UPBS Notice: Borrow time limit reached for Bike ${row.bicycle_code}. -${absolutePenalty} points recorded. You lose ${absolutePenalty} pts/hr until returned. Please return now!`;
                 await sendSMS(row.phone_number, text);
 
                 const notificationService = require('./notificationService');
@@ -241,7 +241,7 @@ const startUnrepairedDamageJob = () => {
                         [bike.bicycle_code]
                     );
 
-                    const text = `ALERT: The 48-hour grace period to repair Bike ${bike.bicycle_code} has expired. A -10 demerit has been applied to your account.`;
+                    const text = `UPBS Notice: The 48-hour window to repair Bike ${bike.bicycle_code} has passed. A -10 point deduction has been recorded.`;
                     await sendSMS(member.phone_number, text);
 
                     const notificationService = require('./notificationService');
@@ -363,7 +363,7 @@ const startHandshakeTimeoutJob = () => {
 
                     await conn.commit();
 
-                    const text = `ALERT: Bike ${row.bicycle_code} condition not confirmed in ${timeoutMins} mins. Trip auto-completed & -${absolutePenalty} pt penalty applied to your account.`;
+                    const text = `Hi! Trip for Bike ${row.bicycle_code} auto-ended after ${timeoutMins} mins without condition confirmation. ${absolutePenalty} honesty points deducted. Please reply GOOD or BROKEN next time!`;
                     await sendSMS(row.phone_number, text);
 
                 } catch (txErr) {
