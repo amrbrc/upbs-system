@@ -1042,6 +1042,10 @@ const delivered = async (req, res) => {
             await upbsConn.rollback();
             return res.json({ reply: `Bike ${bicycleCode} is currently reported as delivered and undergoing repairs.` });
         }
+        if (bike[0].condition_status === 'Pending_Delivery') {
+            await upbsConn.rollback();
+            return res.json({ reply: `Bike ${bicycleCode} is already marked as Pending Delivery and awaiting admin review.` });
+        }
 
         // Close any active or pending return trip for this user on this bike
         const [activeTrip] = await upbsConn.query(

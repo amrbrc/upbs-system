@@ -108,6 +108,7 @@ function renderBikes() {
         const isMissing = bike.condition_status === 'Missing';
         const isBorrowed = bike.condition_status === 'Borrowed';
         const isPending = bike.condition_status === 'Pending_Status';
+        const isPendingDelivery = bike.condition_status === 'Pending_Delivery';
         const isDisabled = Number(bike.is_disabled) === 1 || bike.is_disabled === true || String(bike.is_disabled).toLowerCase() === 'true';
 
         let borderStyle = '';
@@ -134,6 +135,9 @@ function renderBikes() {
         } else if (isPending) {
             borderStyle = 'border: 2px solid #f59e0b; background-color: rgba(245, 158, 11, 0.05);';
             statusBadge = '<div style="font-size:0.6rem; color:white; background:#f59e0b; padding:2px 4px; border-radius:4px; margin-top:4px; font-weight:600;">PENDING CHECK</div>';
+        } else if (isPendingDelivery) {
+            borderStyle = 'border: 2px solid #eab308; background-color: rgba(234, 179, 8, 0.05);';
+            statusBadge = '<div style="font-size:0.6rem; color:#1e293b; background:#eab308; padding:2px 4px; border-radius:4px; margin-top:4px; font-weight:700;">PENDING DELIVERY</div>';
         }
 
         card.innerHTML = `

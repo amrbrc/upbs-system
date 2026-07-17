@@ -1540,6 +1540,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <option value="Disputed" ${bike.condition_status === 'Disputed' ? 'selected' : ''}>Disputed</option>
                             <option value="Missing" ${bike.condition_status === 'Missing' ? 'selected' : ''}>Missing</option>
                             <option value="Pending_Delivery" ${bike.condition_status === 'Pending_Delivery' ? 'selected' : ''}>Pending Delivery</option>
+                            <option value="Borrowed" ${bike.condition_status === 'Borrowed' ? 'selected' : ''}>Borrowed</option>
+                            <option value="Pending_Status" ${bike.condition_status === 'Pending_Status' ? 'selected' : ''}>Pending Status</option>
                         </select>
                     </div>
                     <div class="col-12 col-sm-4">
