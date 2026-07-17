@@ -53,8 +53,13 @@ const workerAPI = axios.create({
     }
 });
 
+let isPollingOutbound = false;
+
 // Outbound SMS Polling loop
 async function pollOutboundSms() {
+    if (isPollingOutbound) return;
+    isPollingOutbound = true;
+
     try {
         const response = await workerAPI.get('/api/gateway/outbound');
         const pendingSms = response.data.smsList;
@@ -75,6 +80,8 @@ async function pollOutboundSms() {
         if (!isTransient) {
             console.error("[Cloud Queue] Error polling outbound SMS:", err.message);
         }
+    } finally {
+        isPollingOutbound = false;
     }
 }
 
@@ -232,7 +239,17 @@ async function pollInbox() {
             }
         }
     } catch (error) {
-        console.error("Database polling error:", error);
+        if (error.code === 'ER_CRASHED_ON_USAGE' || error.errno === 1194) {
+            console.warn("⚠️ CRITICAL: Table 'inbox' is crashed. Attempting auto-repair...");
+            try {
+                await db.query("REPAIR TABLE inbox");
+                console.log("✅ SUCCESS: Table 'inbox' repaired automatically.");
+            } catch (repairError) {
+                console.error("❌ FAILED: Auto-repair of 'inbox' failed:", repairError.message);
+            }
+        } else {
+            console.error("Database polling error:", error);
+        }
     } finally {
         isPolling = false;
     }
