@@ -128,14 +128,28 @@ function setTileLayer(theme) {
     if (currentTileLayer) leafletMap.removeLayer(currentTileLayer);
 
     // Use CartoDB tiles as requested, but without {r} to prevent 404 errors
-    const tileUrl = theme === 'light'
-        ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+    const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+    // Apply CSS filter for dark mode tiles since OSM doesn't have a native dark theme
+    let styleEl = document.getElementById('map-dark-mode-style');
+    if (theme === 'dark') {
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'map-dark-mode-style';
+            styleEl.innerHTML = '.leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); } .leaflet-container { background: #1a1a1a !important; }';
+            document.head.appendChild(styleEl);
+        }
+    } else {
+        if (styleEl) {
+            styleEl.remove();
+        }
+    }
 
     currentTileLayer = L.tileLayer(tileUrl, {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | © <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
+        subdomains: 'abc',
         maxZoom: 20,
+        maxNativeZoom: 19,
     }).addTo(leafletMap);
 }
 
@@ -233,7 +247,7 @@ async function plotStationMarkers() {
                     STATION_COORDS[key] = coords;
                     STATION_COORDS[rawKey] = coords;
                 }
-                
+
                 if (!coords) {
                     alert(`SYSTEM MESSAGE:\nThe new station "${loc.location_name}" was successfully retrieved from the database, but its Latitude is "${loc.latitude}" and Longitude is "${loc.longitude}".\n\nBecause the coordinates are missing/empty in the database, it cannot be plotted on the map. This usually happens if the backend server wasn't fully restarted after the update, so it saved the station with empty coordinates.`);
                     return; // Skip if no coordinates known

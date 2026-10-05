@@ -259,25 +259,51 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const initialTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        const tileUrl = initialTheme === 'light'
-            ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-            : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+        let styleEl = document.getElementById('map-dark-mode-style');
+        if (initialTheme === 'dark') {
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'map-dark-mode-style';
+                styleEl.innerHTML = '.leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); } .leaflet-container { background: #1a1a1a !important; }';
+                document.head.appendChild(styleEl);
+            }
+        } else {
+            if (styleEl) {
+                styleEl.remove();
+            }
+        }
 
         let addStationTileLayer = L.tileLayer(tileUrl, {
-            subdomains: 'abcd',
+            subdomains: 'abc',
             maxZoom: 20,
+            maxNativeZoom: 19,
         }).addTo(addStationMap);
 
         window.addEventListener('themeChanged', (e) => {
             if (addStationTileLayer) {
                 addStationMap.removeLayer(addStationTileLayer);
             }
-            const newTileUrl = e.detail.theme === 'light'
-                ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+            const newTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+            
+            let styleEl = document.getElementById('map-dark-mode-style');
+            if (e.detail.theme === 'dark') {
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = 'map-dark-mode-style';
+                    styleEl.innerHTML = '.leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); } .leaflet-container { background: #1a1a1a !important; }';
+                    document.head.appendChild(styleEl);
+                }
+            } else {
+                if (styleEl) {
+                    styleEl.remove();
+                }
+            }
             addStationTileLayer = L.tileLayer(newTileUrl, {
-                subdomains: 'abcd',
+                subdomains: 'abc',
                 maxZoom: 20,
+                maxNativeZoom: 19,
             }).addTo(addStationMap);
         });
 
